@@ -1,10 +1,5 @@
 from django.urls import path
-from .views import HelloWorldView
-from django.http import HttpResponse
-
-
-def home(request):
-    return HttpResponse("Welcome to the homepage!")
+from .views import HelloWorldView, home
 
 
 urlpatterns = [
