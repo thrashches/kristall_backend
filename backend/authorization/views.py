@@ -91,7 +91,6 @@ class ObtainTokenByPsw(APIView):
             })),
         },
     )
-
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -106,12 +105,23 @@ class ObtainTokenByPsw(APIView):
                     return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
                 return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'error':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObtainTokenByVkCode(APIView):
     serializer_class = AuthCodeSerializer
 
+    @swagger_auto_schema(
+        request_body=AuthByPhone,
+        responses={
+            200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
+                'token': openapi.Schema(type='string', description='Generated token'),
+            })),
+            400: openapi.Response('Error', schema=openapi.Schema(type='object', properties={
+                'error': openapi.Schema(type='string', description='Details of the error'),
+            })),
+        },
+    )
     def post(self, request):
         text = "start "
         serializer = self.serializer_class(request.data)
@@ -140,11 +150,28 @@ class ObtainTokenByVkCode(APIView):
         return Response(data={'result': 'Invalid Date'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ObtainTokenByPhone(ObtainTokenByVkCode):
+class ObtainTokenByPhone(APIView):
     serializer_class = AuthByPhone
 
+    @swagger_auto_schema(
+        request_body=AuthByPhone,
+        responses={
+            200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
+                'token': openapi.Schema(type='string', description='Generated token'),
+            })),
+            400: openapi.Response('Error', schema=openapi.Schema(type='object', properties={
+                'error': openapi.Schema(type='string', description='Details of the error'),
+            })),
+            201: openapi.Response('Details', schema=openapi.Schema(type='object', properties={
+                'details': openapi.Schema(type='string', description='Details of the success'),
+            })),
+        },
+    )
     def post(self, request):
-        serializer = self.serializer_class(request.data)
+        print(request.data)
+        serializer = self.serializer_class(data=request.data)
+        print('serializer')
+        print(serializer.is_valid())
         if serializer.is_valid():
             code = serializer.validated_data.get('code')
             if code:
@@ -154,27 +181,36 @@ class ObtainTokenByPhone(ObtainTokenByVkCode):
                     new_secure_code = get_phone_code_from_api(phone)
                     user.code = new_secure_code
                     user.save()
-                    Response(data={'result': 'we need code again'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        data={'error': 'Cant to find user with that phone. Created new and sended code. Try again '
+                                       'with new code'},
+                        status=status.HTTP_400_BAD_REQUEST)
                 else:
                     saved_code = user.code
+                    if saved_code == 'clear':
+                        new_secure_code = get_phone_code_from_api(phone)
+                        user.code = new_secure_code
+                        user.save()
+                        return Response({'error': 'No active code on this phone, sended new. Try again with new code'})
+
                     if str(code) == str(saved_code):
                         token, created = Token.objects.get_or_create(user=user)
-                        Response(data={'token': token}, status=status.HTTP_200_OK)
+                        user.code = 'clear'
+                        user.save()
+                        return Response(data={'token': token.key}, status=status.HTTP_200_OK)
                     else:
-                        Response(data={'details': 'bad code'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(data={'error': 'Looks that it is a wrong code, try again'},
+                                        status=status.HTTP_400_BAD_REQUEST)
             else:
                 phone = serializer.validated_data.get('phone')
                 secure_code = get_phone_code_from_api(phone)
                 user, created = CrystalUser.objects.get_or_create(identifier=phone, auth_type='phone')
                 user.code = secure_code
                 user.save()
-                return Response(data={'result': 'successfully sended code'}, status=status.HTTP_200_OK)
+                return Response(data={'details': 'we send code to phone number'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'result': f"Serializer is not valid {serializer.errors}"})
-
-
-class ObtainTokenByEmail(ObtainTokenByVkCode):
-    pass
+            return Response(data={'error': f"Invalid Income Data {serializer.errors}"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObtainTokenByGoogleCode(APIView):
