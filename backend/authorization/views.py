@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 import requests
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.views import APIView
@@ -76,21 +77,36 @@ class CreateUserByPsw(APIView):
 class ObtainTokenByPsw(APIView):
     serializer_class = AuthPswSerializer
 
+    @swagger_auto_schema(
+        request_body=AuthPswSerializer,
+        responses={
+            200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
+                'token': openapi.Schema(type='string', description='Generated token'),
+            })),
+            400: openapi.Response('Error', schema=openapi.Schema(type='object', properties={
+                'error': openapi.Schema(type='string', description='Invalid password or validation error'),
+            })),
+            404: openapi.Response('Error', schema=openapi.Schema(type='object', properties={
+                'error': openapi.Schema(type='string', description='User does not exist'),
+            })),
+        },
+    )
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
+            email = serializer.validated_data['email']
             psw = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type='psw', identifier=username)
+                user = CrystalUser.objects.get(auth_type='psw', identifier=email)
                 if user.check_password(psw):
                     token, created = Token.objects.get_or_create(user=user)
-                    return Response({'result': 'success', 'token': token.key}, status=status.HTTP_200_OK)
+                    return Response({'token': token.key}, status=status.HTTP_200_OK)
                 else:
-                    return Response({'result': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
-                return Response({'result': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObtainTokenByVkCode(APIView):

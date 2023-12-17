@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 
 class AuthPswSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    email = serializers.CharField()
     password = serializers.CharField()
 
 
