@@ -60,7 +60,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'crystal',
         'USER': 'postgres',
-        'PASSWORD': "12345",
+        'PASSWORD': "root",
         'HOST': 'localhost',
         'PORT': '5432',
     }

@@ -1,19 +1,21 @@
+import random
 from enum import Enum
 from backend.settings import GOOGLE_OAUTH, VK_OAUTH
 from google.oauth2 import id_token
-from google.auth.transport import requests
+from google.auth.transport import requests as google_requests
+import requests
+
+
+def get_user_info(access_token):
+    idinfo = id_token.verify_oauth2_token(access_token, google_requests.Request())
+    user_email = idinfo.get('email')
+    user_name = idinfo.get('name')
+    return user_email, user_name
 
 
 class OauthWay(Enum):
     GOOGLE = 'google'
     VK = 'vk'
-
-
-def get_user_info(access_token):
-    idinfo = id_token.verify_oauth2_token(access_token, requests.Request())
-    user_email = idinfo.get('email')
-    user_name = idinfo.get('name')
-    return user_email, user_name
 
 
 def create_payload_for_access_google_token(google_credentials, authorization_code):
@@ -61,9 +63,46 @@ def create_oauth_links(oauth_type: OauthWay):
 
             oauth_link = f"https://oauth.vk.com/authorize?client_id={client_id}&display=page&redirect_uri={redirect_url}&scope=email,users,friends&response_type=code&v=5.131"
 
-
         else:
             return False, 'We dont support these kind of OAUTH only VK and GOOGLE'
     except Exception as er:
         return False, f"Unexpected error: {er}"
     return oauth_link, ''
+
+
+def parse_vk_response(response_data):
+    user_info = response_data.get('response')[0]
+    user_id = user_info.get('id')
+    first_name = user_info.get('first_name')
+    last_name = user_info.get('last_name')
+    return user_id, first_name, last_name
+
+
+def check_obj(a, b):
+    if str(a) == str(b):
+        return True
+    else:
+        return False
+
+
+def get_phone_code_from_api(phone):
+    print('sending phone to api ...')
+    print('getting code from phone ...')
+    code = ''.join(random.choices('0123456789', k=4))
+    print(f'[PHONE CODE] {code}')
+    return code
+
+
+def get_vk_user_info(access_token):
+    url = 'https://api.vk.com/method/users.get'
+    params = {
+        'fields': 'first_name,last_name,email',
+        'access_token': access_token,
+        'v': '5.131'
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        user_id, first_name, last_name = parse_vk_response(response.json())
+        return user_id, first_name, last_name
+    else:
+        return None, 'Error', 'Error'  # Обработайте ошибку запроса здесь

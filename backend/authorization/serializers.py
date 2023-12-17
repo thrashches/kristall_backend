@@ -8,3 +8,13 @@ class AuthPswSerializer(serializers.Serializer):
 
 class AuthCodeSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+
+class ResultResponse(serializers.Serializer):
+    result = serializers.CharField()
+    details = serializers.CharField()
+
+
+class AuthByPhone(serializers.Serializer):
+    phone = serializers.CharField()
+    code = serializers.CharField(allow_null=True, required=False)
