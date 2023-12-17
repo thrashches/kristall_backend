@@ -8,15 +8,14 @@ class CrystalUser(AbstractUser):
         ('mail', 'Mail'),
         ('google', 'Google'),
         ('vk', 'VK'),
+        ('psw', 'PSW'),
     ]
+
     auth_type = models.CharField(
         max_length=10,
         choices=AUTH_TYPE_CHOICES,
         null=False
     )
-
     class Meta:
         verbose_name = 'Crystal User'
         verbose_name_plural = 'Crystal Users'
-
-

@@ -3,8 +3,8 @@ from .models import CrystalUser
 
 
 class CrystalUserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'email', 'auth_type', 'username')  # добавьте остальные поля модели
-    search_fields = ('email', 'auth_type', 'username')  # добавьте поля для поиска
+    list_display = ('id', 'email', 'auth_type', 'username')
+    search_fields = ('email', 'auth_type', 'username')
 
 
 admin.site.register(CrystalUser, CrystalUserAdmin)

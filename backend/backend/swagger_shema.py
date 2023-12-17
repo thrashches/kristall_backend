@@ -11,7 +11,6 @@ schema_view = get_schema_view(
         contact=openapi.Contact(email="contact@example.com"),
         license=openapi.License(name="BSD License"),
     ),
-    url='https://supportstation.kz/crystal/',
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
