@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CrystalUser
-from .serializers import AuthCodeSerializer, AuthPswSerializer, AuthByPhone
+from .serializers import AuthCodeSerializer, AuthPswSerializer, AuthByPhone, OAuthUrlsSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
 from backend.settings import GOOGLE_OAUTH, VK_OAUTH
@@ -112,19 +112,33 @@ class ObtainTokenByVkCode(APIView):
     serializer_class = AuthCodeSerializer
 
     @swagger_auto_schema(
-        request_body=AuthByPhone,
+        request_body=serializer_class,
         responses={
-            200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
-                'token': openapi.Schema(type='string', description='Generated token'),
-            })),
-            400: openapi.Response('Error', schema=openapi.Schema(type='object', properties={
-                'error': openapi.Schema(type='string', description='Details of the error'),
-            })),
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+            400: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+            409: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
         },
     )
+
+
     def post(self, request):
-        text = "start "
-        serializer = self.serializer_class(request.data)
+        """ Need code from url parametr after redirecting from Oauth url authorization link"""
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             authorization_code = serializer.validated_data.get('code')
             payload, token_url = create_payload_for_access_vk_token(VK_OAUTH, authorization_code)
@@ -143,11 +157,11 @@ class ObtainTokenByVkCode(APIView):
                                                            first_name=first_name,
                                                            last_name=last_name)
                 token, created = Token.objects.get_or_create(user=user)
-                return Response(data={"result": "success", "token": token}, status=status.HTTP_200_OK)
+                return Response(data={"token": token}, status=status.HTTP_200_OK)
             else:
                 text = f"we have a problem with token response because {token_response.text}"
-                return Response(data={'result': text}, status=status.HTTP_409_CONFLICT)
-        return Response(data={'result': 'Invalid Date'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data={'error': text}, status=status.HTTP_409_CONFLICT)
+        return Response(data={'error': 'Invalid Date'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ObtainTokenByPhone(APIView):
@@ -168,10 +182,12 @@ class ObtainTokenByPhone(APIView):
         },
     )
     def post(self, request):
-        print(request.data)
+        """only phone -> send code to phone number, create user/ 201
+           phone + code (success) -> nothing/ token + 200:
+           phone + code (wrong phone) -> create new user, send code to new number/ error 400
+           phone + code (wrong code) -> nothing / error 400
+        """
         serializer = self.serializer_class(data=request.data)
-        print('serializer')
-        print(serializer.is_valid())
         if serializer.is_valid():
             code = serializer.validated_data.get('code')
             if code:
@@ -227,25 +243,31 @@ class ObtainTokenByGoogleCode(APIView):
                 try:
                     email, name = get_user_info(access_token)
                 except Exception as er:
-                    return Response(data={'result': 'error', 'details': er})
-                try:
-                    user = User.objects.get(indefier=email, auth_type='google')
-                except User.DoesNotExist:
-                    user = CrystalUser.objects.create_user(identifier=email, auth_type='google')
-                token, created = Token.objects.get_or_create(user=user)
+                    return Response(data={'error':f'Unexpected error in obtain user info with access token {er}'}, status=status.HTTP_409_CONFLICT)
+
+                user, was_born = CrystalUser.objects.create_user(identifier=email, auth_type='google')
+                token, crafted = Token.objects.get_or_create(user=user)
+
                 return Response(data={"result": "success", "token": token}, status=status.HTTP_200_OK)
             else:
-                return Response(data={'result': 'fail',
-                                      'details': f'cant to obtain google access token because {token_response.text}'},
+                return Response(data={'error': f'cant to obtain google access token because {token_response.text}'},
                                 status=status.HTTP_403_FORBIDDEN)
         else:
             errors = serializer.errors
-            return Response(data={"result": "error", "details": f" serializer{errors}"},
+            return Response(data={"error": f"Data invalid: {errors}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateAuthLinks(APIView):
+    @swagger_auto_schema(
+        operation_description="Get OAuth links for Google and VK",
+        manual_parameters=[],
+        responses={200: OAuthUrlsSerializer},  # Возвращаемый тип - сериализатор
+    )
     def get(self, request):
+        """
+        Get OAuth links for Google and VK.
+        """
         google_link, comment = create_oauth_links(OauthWay.GOOGLE)
         if google_link:
             google_result = google_link
@@ -256,6 +278,11 @@ class CreateAuthLinks(APIView):
             vk_result = vk_link
         else:
             vk_result = comment
-        result = {'google_url': google_result,
-                  'vk_url': vk_result}
-        return Response(result)
+        result = {
+            'google_url': google_result,
+            'vk_url': vk_result
+        }
+        serializer = OAuthUrlsSerializer(data=result)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -18,3 +18,8 @@ class ResultResponse(serializers.Serializer):
 class AuthByPhone(serializers.Serializer):
     phone = serializers.CharField()
     code = serializers.CharField(allow_null=True, required=False)
+
+
+class OAuthUrlsSerializer(serializers.Serializer):
+    google_url = serializers.CharField()
+    vk_url = serializers.CharField()
