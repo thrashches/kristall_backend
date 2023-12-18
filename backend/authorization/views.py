@@ -12,7 +12,7 @@ from django.conf import settings
 from rest_framework.authtoken.models import Token
 from django.http import HttpResponse
 
-def vkOauthTest(request):
+def creating_vk_oauth_test(request):
     text = "start "
     authorization_code = request.GET.get('code')
     vk_secret = settings.VK_OAUTH
@@ -29,7 +29,7 @@ def vkOauthTest(request):
     return HttpResponse(text)
 
 
-def googleOauthTest(request):
+def creating_google_oauth_test(request):
     google_credientals = settings.GOOGLE_OAUTH
     text = "start "
     print('START')
