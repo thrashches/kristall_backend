@@ -19,12 +19,9 @@ class ProductAdmin(admin.ModelAdmin):
 
     menu.short_description = 'Category'
 
+
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'image_file', 'visible')
     list_filter = ('visible',)
     search_fields = ('product__title',)
-
-
-
-
