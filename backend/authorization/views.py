@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 import requests
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -6,25 +5,24 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CrystalUser
-from .serializers import AuthCodeSerializer, AuthPswSerializer, AuthByPhone, OAuthUrlsSerializer
+from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
-from backend.settings import GOOGLE_OAUTH, VK_OAUTH
+from django.conf import settings
 from rest_framework.authtoken.models import Token
 from django.http import HttpResponse
-
 
 def vkOauthTest(request):
     text = "start "
     authorization_code = request.GET.get('code')
-    payload, token_url = create_payload_for_access_vk_token(VK_OAUTH, authorization_code)
+    vk_secret = settings.VK_OAUTH
+    payload, token_url = create_payload_for_access_vk_token(vk_secret, authorization_code)
     token_response = requests.get(token_url, params=payload)
     if token_response.status_code == 200:
         text += "we have a token \n "
         token = token_response.json().get('access_token')
         text += str(token)
         user_id, first_name, last_name = get_vk_user_info(token)
-
         text += f"user_id {user_id} , first_name {first_name} , last_name {last_name}"
     else:
         text += f"we have a problem with token response because {token_response.text}"
@@ -32,11 +30,12 @@ def vkOauthTest(request):
 
 
 def googleOauthTest(request):
+    google_credientals = settings.GOOGLE_OAUTH
     text = "start "
     print('START')
     authorization_code = request.GET.get('code')
     print('[get code]', authorization_code)
-    payload, token_url = create_payload_for_access_google_token(GOOGLE_OAUTH, authorization_code)
+    payload, token_url = create_payload_for_access_google_token(google_credientals, authorization_code)
     print('[payload]', payload, token_url)
     token_response = requests.post(token_url, data=payload)
     print(token_response)
@@ -50,10 +49,10 @@ def googleOauthTest(request):
 
 
 class CreateUserByPsw(APIView):
-    serializer_class = AuthPswSerializer
+    serializer_class = AuthPasswordSerializer
 
     @swagger_auto_schema(
-        request_body=AuthPswSerializer,
+        request_body=AuthPasswordSerializer,
         responses={
             201: "Successfully created",
             400: "This username already exists"
@@ -65,20 +64,20 @@ class CreateUserByPsw(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
-            psw = serializer.validated_data['password']
+            password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type='psw', identifier=username)
+                user = CrystalUser.objects.get(auth_type= 'password', identifier=username)
                 return Response({'result': 'This username already exists'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
-                user = CrystalUser.objects.create_user(identifier=username, password=psw, auth_type='psw')
+                user = CrystalUser.objects.create_user(identifier=username, password=password, auth_type='password')
                 return Response({'result': f'created {user}'}, status=status.HTTP_201_CREATED)
 
 
 class ObtainTokenByPsw(APIView):
-    serializer_class = AuthPswSerializer
+    serializer_class = AuthPasswordSerializer
 
     @swagger_auto_schema(
-        request_body=AuthPswSerializer,
+        request_body=AuthPasswordSerializer,
         responses={
             200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
                 'token': openapi.Schema(type='string', description='Generated token'),
@@ -95,10 +94,10 @@ class ObtainTokenByPsw(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
-            psw = serializer.validated_data['password']
+            password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type='psw', identifier=email)
-                if user.check_password(psw):
+                user = CrystalUser.objects.get(auth_type= 'password', identifier=email)
+                if user.check_password(password):
                     token, created = Token.objects.get_or_create(user=user)
                     return Response({'token': token.key}, status=status.HTTP_200_OK)
                 else:
@@ -135,13 +134,13 @@ class ObtainTokenByVkCode(APIView):
         },
     )
 
-
     def post(self, request):
         """ Need code from url parametr after redirecting from Oauth url authorization link"""
         serializer = self.serializer_class(data=request.data)
+        vk_secret = settings.VK_OAUTH
         if serializer.is_valid():
             authorization_code = serializer.validated_data.get('code')
-            payload, token_url = create_payload_for_access_vk_token(VK_OAUTH, authorization_code)
+            payload, token_url = create_payload_for_access_vk_token(vk_secret, authorization_code)
             token_response = requests.get(token_url, params=payload)
             if token_response.status_code == 200:
                 token = token_response.json().get('access_token')
@@ -165,10 +164,10 @@ class ObtainTokenByVkCode(APIView):
 
 
 class ObtainTokenByPhone(APIView):
-    serializer_class = AuthByPhone
+    serializer_class = AuthByPhoneSerializer
 
     @swagger_auto_schema(
-        request_body=AuthByPhone,
+        request_body=AuthByPhoneSerializer,
         responses={
             200: openapi.Response('Token', schema=openapi.Schema(type='object', properties={
                 'token': openapi.Schema(type='string', description='Generated token'),
@@ -234,9 +233,10 @@ class ObtainTokenByGoogleCode(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
+        google_secret = settings.GOOGLE_OAUTH
         if serializer.is_valid():
             authorization_code = serializer.validated_data.get('code')
-            payload, token_url = create_payload_for_access_google_token(GOOGLE_OAUTH, authorization_code)
+            payload, token_url = create_payload_for_access_google_token(google_secret, authorization_code)
             token_response = requests.post(token_url, data=payload)
             if token_response.status_code == 200:
                 access_token = token_response.json().get('id_token')
@@ -262,7 +262,7 @@ class CreateAuthLinks(APIView):
     @swagger_auto_schema(
         operation_description="Get OAuth links for Google and VK",
         manual_parameters=[],
-        responses={200: OAuthUrlsSerializer},  # Возвращаемый тип - сериализатор
+        responses={200: OAuthUrlsSerializer},
     )
     def get(self, request):
         """

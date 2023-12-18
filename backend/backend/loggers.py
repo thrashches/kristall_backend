@@ -1,7 +1,8 @@
 import logging
 import os
+import settings
 
-project_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+project_directory = settings.BASE_DIR
 logs_directory = os.path.join(project_directory, 'backend', 'logs')
 
 if not os.path.exists(logs_directory):

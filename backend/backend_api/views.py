@@ -13,4 +13,7 @@ class TestT(APIView):
             'user': str(request.user),
             'auth': str(request.auth),
         }
-        return Response(content)
+        return Response(content
+
+
+                        )

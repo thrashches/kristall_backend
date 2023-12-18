@@ -105,4 +105,4 @@ def get_vk_user_info(access_token):
         user_id, first_name, last_name = parse_vk_response(response.json())
         return user_id, first_name, last_name
     else:
-        return None, 'Error', 'Error'  # Обработайте ошибку запроса здесь
+        return None, 'Error', 'Error'  

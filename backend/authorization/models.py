@@ -9,7 +9,7 @@ class CrystalUser(AbstractUser):
         ('mail', 'Mail'),
         ('google', 'Google'),
         ('vk', 'VK'),
-        ('psw', 'PSW'),
+        ('password', 'PSW'),
     ]
 
     auth_type = models.CharField(
