@@ -1,6 +1,6 @@
-
 from django.contrib import admin
 from django.urls import path, re_path, include
+
 from backend.swagger_shema import schema_view
 from backend_api.urls import router_goods
 

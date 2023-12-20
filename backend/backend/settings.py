@@ -1,11 +1,14 @@
-
 from pathlib import Path
+
 from backend.secret import GOOGLE_SECRET, VK_SECRET
-CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SECRET_KEY = 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)'
+
 DEBUG = True
+
 ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
@@ -16,29 +19,30 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'backend_api',
-    'authorization',
     'drf_yasg',
     'rest_framework.authtoken',
-    'cabinet',
-    'goods',
+    'backend_api.apps.BackendApiConfig',
+    'authorization.apps.AuthorizationConfig',
+    'goods.apps.GoodsConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET
+
 VK_OAUTH = VK_SECRET
 
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-        },
-    },
-    'USE_SESSION_AUTH': False,
-    'JSON_EDITOR': True,
-    'SHOW_REQUEST_HEADERS': True,
-}
+# SWAGGER_SETTINGS = {
+#     'SECURITY_DEFINITIONS': {
+#         'Bearer': {
+#             'type': 'apiKey',
+#             'name': 'Authorization',
+#             'in': 'header',
+#         },
+#     },
+#     'USE_SESSION_AUTH': False,
+#     'JSON_EDITOR': True,
+#     'SHOW_REQUEST_HEADERS': True,
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,16 +59,18 @@ ROOT_URLCONF = 'backend.urls'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
-
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'crystal',
+    #     'USER': 'postgres',
+    #     'PASSWORD': "12345",
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'crystal',
-        'USER': 'postgres',
-        'PASSWORD': "12345",
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -82,15 +88,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 }
 
 TEMPLATES = [
@@ -109,10 +112,13 @@ TEMPLATES = [
     },
 ]
 
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
+
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 
-LANGUAGE_CODE = 'ru'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'ru-ru'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 STATIC_ROOT = '/static_kristall/'

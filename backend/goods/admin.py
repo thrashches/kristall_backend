@@ -10,14 +10,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'menu', 'price', 'visible', 'is_new')
-    list_filter = ('visible', 'is_new', 'menu')
+    list_display = ('title', 'category', 'price', 'visible', 'is_new')
+    list_filter = ('visible', 'is_new', 'category')
     search_fields = ('title', 'description')
-
-    def menu(self, obj):
-        return obj.menu.name
-
-    menu.short_description = 'Category'
 
 
 @admin.register(ProductImage)

@@ -1,5 +1,3 @@
-import logging
-
 from backend.loggers import my_logger
 
 
