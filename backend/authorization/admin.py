@@ -1,16 +1,32 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
+
 from .models import CrystalUser
-from django.contrib.auth.hashers import make_password
 
 
-class CrystalUserAdmin(admin.ModelAdmin):
+class CrystalUserAdmin(UserAdmin):
     list_display = ('id', 'username', 'email', 'auth_type', 'identifier')
-    fields = ('auth_type', 'identifier', 'password')
-
-    def save_model(self, request, obj, form, change):
-        if obj.password:
-            obj.password = make_password(obj.password)
-        obj.save()
+    fieldsets = (
+        (None, {"fields": (
+            "username", "password",
+            "auth_type", "code",
+        )}),
+        (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+    )
 
 
 admin.site.register(CrystalUser, CrystalUserAdmin)

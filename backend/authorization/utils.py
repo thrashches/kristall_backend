@@ -1,9 +1,11 @@
 import random
 from enum import Enum
-from backend.settings import GOOGLE_OAUTH, VK_OAUTH
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
+
 import requests
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+
+from backend.settings import GOOGLE_OAUTH, VK_OAUTH
 
 
 def get_user_info(access_token):
@@ -105,4 +107,4 @@ def get_vk_user_info(access_token):
         user_id, first_name, last_name = parse_vk_response(response.json())
         return user_id, first_name, last_name
     else:
-        return None, 'Error', 'Error'  
+        return None, 'Error', 'Error'

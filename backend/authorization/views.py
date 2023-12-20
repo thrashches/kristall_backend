@@ -1,16 +1,18 @@
 import requests
+from django.conf import settings
+from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .models import CrystalUser
 from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
-from django.conf import settings
-from rest_framework.authtoken.models import Token
-from django.http import HttpResponse
+
 
 def creating_vk_oauth_test(request):
     text = "start "
@@ -66,7 +68,7 @@ class CreateUserByPsw(APIView):
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type= 'password', identifier=username)
+                user = CrystalUser.objects.get(auth_type='password', identifier=username)
                 return Response({'result': 'This username already exists'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
                 user = CrystalUser.objects.create_user(identifier=username, password=password, auth_type='password')
@@ -96,7 +98,7 @@ class ObtainTokenByPsw(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type= 'password', identifier=email)
+                user = CrystalUser.objects.get(auth_type='password', identifier=email)
                 if user.check_password(password):
                     token, created = Token.objects.get_or_create(user=user)
                     return Response({'token': token.key}, status=status.HTTP_200_OK)
@@ -133,7 +135,6 @@ class ObtainTokenByVkCode(APIView):
             ),
         },
     )
-
     def post(self, request):
         """ Need code from url parametr after redirecting from Oauth url authorization link"""
         serializer = self.serializer_class(data=request.data)
@@ -243,7 +244,8 @@ class ObtainTokenByGoogleCode(APIView):
                 try:
                     email, name = get_user_info(access_token)
                 except Exception as er:
-                    return Response(data={'error':f'Unexpected error in obtain user info with access token {er}'}, status=status.HTTP_409_CONFLICT)
+                    return Response(data={'error': f'Unexpected error in obtain user info with access token {er}'},
+                                    status=status.HTTP_409_CONFLICT)
 
                 user, was_born = CrystalUser.objects.create_user(identifier=email, auth_type='google')
                 token, crafted = Token.objects.get_or_create(user=user)
