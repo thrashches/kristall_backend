@@ -1,5 +1,4 @@
 from rest_framework.routers import DefaultRouter, SimpleRouter
-
 from .views import CategoryViewSet, ProductViewSet, ProductImageViewSet
 
 router_goods = SimpleRouter()
