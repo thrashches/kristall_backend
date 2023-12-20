@@ -1,3 +1,6 @@
+import os
+from uuid import uuid4
+
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -43,9 +46,15 @@ class Product(models.Model):
         return self.title
 
 
+def image_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    unique_filename = f'{uuid4()}.{ext}'
+    return os.path.join('product_images', str(instance.id), unique_filename)
+
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    image_file = models.ImageField(upload_to='product_images/')
+    image_file = models.ImageField(upload_to=image_upload_path)
     visible = models.BooleanField(default=True)
 
     class Meta:
