@@ -49,7 +49,7 @@ class Product(models.Model):
 def image_upload_path(instance, filename):
     ext = filename.split('.')[-1]
     unique_filename = f'{uuid4()}.{ext}'
-    return os.path.join('product_images', str(instance.id), unique_filename)
+    return os.path.join('product_images',  unique_filename)
 
 
 class ProductImage(models.Model):
