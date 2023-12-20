@@ -1,3 +1,5 @@
+import os
+
 from django.contrib import admin
 from goods.models import Category, Product, ProductImage
 
@@ -25,3 +27,9 @@ class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'image_file', 'visible')
     list_filter = ('visible',)
     search_fields = ('product__title',)
+
+    def delete_model(self, request, obj):
+        file_path = obj.image.path
+        obj.delete()
+        if file_path and os.path.isfile(file_path):
+            os.remove(file_path)
