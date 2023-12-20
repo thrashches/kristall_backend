@@ -1,7 +1,7 @@
-
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
-
+from goods.models import Category, Product, ProductImage
+from goods.serializers import CategorySerializer, ProductSerializer, ProductImageSerializer
 
 
 class CustomPagination(PageNumberPagination):

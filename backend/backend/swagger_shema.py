@@ -7,10 +7,11 @@ schema_view = get_schema_view(
         title="Your API",
         default_version='v1',
         description="Your API description",
-        terms_of_service="https://www.example.com/terms/",
+        terms_of_service="https://supportstation.kz/crystal/",
         contact=openapi.Contact(email="contact@example.com"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
+    url='https://supportstation.kz',
 )

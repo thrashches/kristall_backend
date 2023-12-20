@@ -1,11 +1,12 @@
 
 from pathlib import Path
 from backend.secret import GOOGLE_SECRET, VK_SECRET
-
+CSRF_COOKIE_SECURE = True
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)'
 DEBUG = True
-ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1','localhost']
+ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1', 'localhost']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -17,7 +18,9 @@ INSTALLED_APPS = [
     'backend_api',
     'authorization',
     'drf_yasg',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'cabinet',
+    'goods',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET
@@ -51,23 +54,24 @@ ROOT_URLCONF = 'backend.urls'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'crystal',
+        'USER': 'postgres',
+        'PASSWORD': "12345",
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'crystal',
-#         'USER': 'postgres',
-#         'PASSWORD': "root",
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
