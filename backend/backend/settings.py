@@ -1,15 +1,12 @@
 
 from pathlib import Path
-
 from backend.secret import GOOGLE_SECRET, VK_SECRET
-
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
 BASE_DIR = Path(__file__).resolve().parent.parent
-print('BASE DIR', BASE_DIR)
-
 SECRET_KEY = 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)'
 DEBUG = True
-
-ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1','localhost']
+ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -22,7 +19,9 @@ INSTALLED_APPS = [
     'backend_api',
     'authorization',
     'drf_yasg',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'cabinet',
+    'goods',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET
@@ -49,23 +48,26 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'backend.middleware.LoggingMiddleware'
+    # 'backend.middleware.LoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'crystal',
         'USER': 'postgres',
-        'PASSWORD': "root",
+        'PASSWORD': "12345",
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -89,7 +91,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ]
-
 }
 
 TEMPLATES = [
@@ -110,14 +111,13 @@ TEMPLATES = [
 
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 TIME_ZONE = 'UTC'
 USE_I18N = True
-
 USE_TZ = True
-
 STATIC_ROOT = '/static_kristall/'
+MEDIA_ROOT = '/media_kristall/'
 
 STATIC_URL = '/static/'
-
+MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,6 +1,6 @@
 import logging
 import os
-import settings
+from django.conf import settings
 
 project_directory = settings.BASE_DIR
 logs_directory = os.path.join(project_directory, 'backend', 'logs')
