@@ -2,6 +2,7 @@
 from pathlib import Path
 from backend.secret import GOOGLE_SECRET, VK_SECRET
 CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)'
 DEBUG = True
@@ -54,12 +55,7 @@ ROOT_URLCONF = 'backend.urls'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+
 
 DATABASES = {
     'default': {
@@ -120,6 +116,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 STATIC_ROOT = '/static_kristall/'
+MEDIA_ROOT = '/media_kristall/'
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'

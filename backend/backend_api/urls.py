@@ -5,5 +5,5 @@ from backend_api.views import CategoryViewSet, ProductViewSet, ProductImageViewS
 router_goods = SimpleRouter()
 router_goods.register(r'menu', CategoryViewSet, basename='menu')
 router_goods.register(r'goods', ProductViewSet, basename='products')
-router_goods.register(r'goods/(?P<product_id>\d+)/images', ProductImageViewSet, basename='product-images')
+router_goods.register(r'goods/(?P<product_id>\d+)/images', ProductImageViewSet, basename='product_Images')
 
