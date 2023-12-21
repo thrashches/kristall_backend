@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 
 from backend.secret import GOOGLE_SECRET, VK_SECRET
@@ -94,6 +95,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'UPLOADED_FILES_USE_URL': True,
 }
 
 TEMPLATES = [
@@ -121,8 +123,8 @@ LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
-STATIC_ROOT = '/static_kristall/'
-MEDIA_ROOT = '/media_kristall/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_kristall')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_kristall')
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'

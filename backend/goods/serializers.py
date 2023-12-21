@@ -16,10 +16,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
-    image_file = serializers.SerializerMethodField()
-
-    def get_image_file(self, obj):
-        return self.context['request'].build_absolute_uri(obj.image_file.url).replace('http://', 'https://')
+    image_file = serializers.ImageField(use_url=True, read_only=True)
 
     class Meta:
         model = ProductImage
