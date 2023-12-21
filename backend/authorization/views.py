@@ -293,11 +293,74 @@ class CreateAuthLinks(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ChangeUserDataViewSet(viewsets.ModelViewSet):
-    queryset = CrystalUser.objects.all()
+
+
+
+class ChangeUserDataViewSet(viewsets.GenericViewSet):
+    """я долго пытался сделать вьюесет с тремями полями и что бы в урле не было параметров
+     с тремя полями получилось. А квот как урлы чтоб были н /user/me/{id] а /user/me/  не допедрил плюнул и сделал обычную вью
+    как мать его это по человечески делается?????!!!! """
+    queryset = CrystalUser.objects.none()
     serializer_class = ChangeUserDataSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        serialized_user = self.serializer_class(user)
+        return Response(serialized_user.data, status=200)
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User data updated"}, status=200)
+        return Response(serializer.errors, status=400)
+
+    def destroy(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()
+        return Response({"message": "User deleted"}, status=204)
+
+
+class ChangeUserDataAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={200: 'Retrieve user data', 400: 'Bad Request: Invalid data provided'},
+        operation_description="Retrieve user data",
+    )
+    def get(self, request):
+        user = request.user
+        serializer = ChangeUserDataSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=ChangeUserDataSerializer,
+        responses={200: 'User data updated successfully', 400: 'Bad Request: Invalid data provided'},
+        operation_description="Update user data",
+    )
+    def put(self, request):
+        user = request.user
+        serializer = ChangeUserDataSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User data updated"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        responses={204: 'User deleted successfully'},
+        operation_description="Delete user data",
+    )
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "User deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
 
 
 class ChangePasswordView(APIView):
@@ -305,6 +368,22 @@ class ChangePasswordView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_summary="Change user password",
+        operation_description="Endpoint to change user password.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['new_password'],
+            properties={
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
+            },
+        ),
+        responses={
+            200: 'Password updated successfully',
+            400: 'Bad Request: Invalid data provided',
+        },
+        security=[{"TokenAuthentication": []}],
+    )
     def put(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
