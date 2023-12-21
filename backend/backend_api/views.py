@@ -34,5 +34,5 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     def images(self, request, pk):
         product = self.get_object()
         images = product.images.all()
-        serializer = ProductImageSerializer(images, many=True)
+        serializer = ProductImageSerializer(images, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
