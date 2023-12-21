@@ -13,7 +13,7 @@ urlpatterns = [
     path('crystal/api/v1/', include(router_goods.urls)),
     path('crystal/api/v1/auth/', include('authorization.urls')),
     path('crystal/api/v1/user/change_password/', ChangePasswordView.as_view(), name='change_password'),
-    path('crystal/api/v1/user/me/',ChangeUserDataAPIView.as_view(),name='user_get_put_delete'),
+    # path('crystal/api/v1/user/me/',ChangeUserDataAPIView.as_view(),name='user_get_put_delete'),
 
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
