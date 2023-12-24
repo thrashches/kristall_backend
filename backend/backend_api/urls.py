@@ -14,11 +14,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', ChangeUserDataViewSet.as_view({
         'get': 'retrieve',
-        # 'put': 'update',
-        # 'delete': 'destroy'
+        'put': 'update',
+        'delete': 'destroy'
         }),
          name='user_detail'),
-    # path('users/me/', ChangeUserDataViewSet.as_view({'put': 'me'}), name='user-change-password'),
+    path('users/me/', ChangeUserDataViewSet.as_view({'put': 'me'}), name='user-change-password'),
 ]
 urlpatterns += my_router.urls
 urlpatterns += auth_url_paterns
