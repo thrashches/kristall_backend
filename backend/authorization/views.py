@@ -351,7 +351,7 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"messages" : f"Неправильные данные {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         responses={204: "No Content"}
@@ -386,5 +386,5 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
             user.set_password(new_password)
             user.save()
             return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
-        return Response({"message": f"Неправильные данные"},
+        return Response({"message": f"Неправильные данные: {serializer.errors}"},
                         status=status.HTTP_400_BAD_REQUEST)

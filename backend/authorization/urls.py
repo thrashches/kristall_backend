@@ -2,7 +2,7 @@
 from django.urls import path
 
 from authorization.views import ObtainTokenByGoogleCode, CreateAuthLinks, ObtainTokenByPsw, ObtainTokenByVkCode, \
-    ObtainTokenByPhone, creating_google_oauth_test, creating_vk_oauth_test, ChangeUserDataViewSet
+    ObtainTokenByPhone, creating_google_oauth_test, creating_vk_oauth_test
 
 auth_url_paterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),
@@ -14,5 +14,3 @@ auth_url_paterns = [
     path('tests/get_token/oauth/google/', creating_google_oauth_test, name='testing_page_google_oauth'),
     path('tests/get_token/oauth/vk/', creating_vk_oauth_test, name='testing_page_vk_oauth'),
 ]
-
-

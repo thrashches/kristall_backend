@@ -1,4 +1,4 @@
-f
+
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -6,7 +6,6 @@ from backend.swagger_shema import schema_view
 
 
 urlpatterns = [
-
     path('api/v1/', include('backend_api.urls')),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
