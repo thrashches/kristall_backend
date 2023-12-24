@@ -294,105 +294,164 @@ class CreateAuthLinks(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ChangeUserDataViewSet(viewsets.ViewSet):
-    """Я Допедрил?"""
+class ChangeUserDataViewSet2(viewsets.ViewSet):
+    """ХМ....
+      Теперь непонятно как добиться:
+      /users/ -> get -> user_info
+      /users/ -> put -> update_user_info
+      /users/ -> delete -> self_kill
+      С помощью экшенов получается только /users/user_info и тд
+      Как сделать экшн который не добаляется в урл я не понял.
+      2 варианта тебе вьюхи. внизу еще одна
+    """
     model_class = CrystalUser
     serializer_class = ChangeUserDataSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_object(self):
         username = self.request.user.username
         user = self.model_class.objects.get(username=username)
         return user
 
-    @action(detail=False, methods=['get'])
-    def user_info(self):
+    @swagger_auto_schema(
+        operation_description="Retrieve user info",
+        responses={200: ChangeUserDataSerializer()},
+        permission_classes=[IsAuthenticated]
+    )
+    @action(detail=False, methods=['get'], url_path='me')
+    def user_info(self, request):
         user = self.get_object()
         serialized_user = self.serializer_class(user)
         return Response(serialized_user.data, status=200)
 
-    @action(detail=False,methods=['put'])
-    def update_user_info(self):
+    @action(detail=False, methods=['put'], url_path='me')
+    def update_user_info(self, request):
         user = self.get_object()
         data = self.request.data
         serializer = self.serializer_class(user, data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "User data updated"}, status=200)
+            return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=400)
 
-    @action(detail=False,methods=['delete'])
+    @action(detail=False, methods=['delete'], url_path='me')
     def user_self_kill(self, request, *args, **kwargs):
         user = request.user
         user.delete()
-        return Response({"message": "User deleted"}, status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class ChangeUserDataAPIView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        responses={200: 'Retrieve user data', 400: 'Bad Request: Invalid data provided'},
-        operation_description="Retrieve user data",
-    )
-
-    def get(self, request):
-        user = request.user
-        serializer = ChangeUserDataSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        request_body=ChangeUserDataSerializer,
-        responses={200: 'User data updated successfully', 400: 'Bad Request: Invalid data provided'},
-        operation_description="Update user data",
-    )
-    def put(self, request):
-        user = request.user
-        serializer = ChangeUserDataSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "User data updated"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(
-        responses={204: 'User deleted successfully'},
-        operation_description="Delete user data",
-    )
-    def delete(self, request):
-        user = request.user
-        user.delete()
-        return Response({"message": "User deleted"}, status=status.HTTP_204_NO_CONTENT)
-
-
-class ChangePasswordView(APIView):
-    serializer_class = UpdatePasswordSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_summary="Change user password",
-        operation_description="Endpoint to change user password.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['new_password'],
-            properties={
-                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
-            },
-        ),
-        responses={
-            200: 'Password updated successfully',
-            400: 'Bad Request: Invalid data provided',
-        },
-        security=[{"TokenAuthentication": []}],
-    )
-    def put(self, request, *args, **kwargs):
+    @action(detail=False, url_path='password_change', methods=['put'])
+    def me(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             user = request.user
             new_password = serializer.validated_data.get('new_password')
+            if not new_password:
+                return Response({"message": "Для изменения пароля требуется ввести новый пароль"},
+                                status=status.HTTP_400_BAD_REQUEST)
             user.set_password(new_password)
             user.save()
-            return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
+        return Response({"message": f"Хотя бы одно поле должно быть заполнено."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangeUserDataViewSet(viewsets.ViewSet):
+    """User handler"""
+    model_class = CrystalUser
+    serializer_class = ChangeUserDataSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def get_object(self):
+        username = self.request.user.username
+        user = self.model_class.objects.get(username=username)
+        return user
+
+    @swagger_auto_schema(
+
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s first name'),
+                    'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s last name'),
+                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, description='User\'s email'),
+                },
+            ),
+        }
+    )
+    def retrieve(self, request):
+        user = self.get_object()
+        serialized_user = self.serializer_class(user)
+        return Response(serialized_user.data, status=200)
+
+    @swagger_auto_schema(
+        operation_summary="At list one field required",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='New first name'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='New last name'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
+                                        description='New email address '),
+            },
+        ),
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='New first name'),
+                    'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='New last name'),
+                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
+                                            description='New email address'),
+                },
+                description='User information updated successfully.',
+            ),
+            400: "Bad Request. Please provide valid data.",
+        },
+    )
+    def update(self, request):
+        user = self.get_object()
+        serializer = self.serializer_class(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        responses={204: "No Content"}
+    )
+    def destroy(self, request):
+        user = self.get_object()
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
+            },
+            required=['password'],
+        ),
+        responses={
+            200: openapi.Response(description='Password changed successfully.'),
+            400: "Bad Request. Please provide valid data.",
+        }
+    )
+    @action(detail=False, url_path='me', methods=['put'])
+    def me(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user
+            new_password = serializer.validated_data.get('new_password')
+            if not new_password:
+                return Response({"message": "Для изменения пароля требуется ввести новый пароль"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
+        return Response({"message": f"Неправильные данные"},
+                        status=status.HTTP_400_BAD_REQUEST)

@@ -35,3 +35,4 @@ local_settings.py
 # Temporary files
 *.tmp
 *~
+backend/secret.py

@@ -23,16 +23,25 @@ class OAuthUrlsSerializer(serializers.Serializer):
 
 
 class ChangeUserDataSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
+    def validate(self, data):
+        fields_to_check = ['first_name', 'last_name', 'email', 'password']
+        non_empty_fields = [field for field in fields_to_check if data.get(field)]
+        if not non_empty_fields:
+            raise serializers.ValidationError("At least one field should not be empty.")
+        return data
+
     class Meta:
         model = CrystalUser
-        fields = ['first_name', 'last_name', 'email']
-
+        fields = ['first_name', 'last_name', 'email', 'password']
         extra_kwargs = {
             'first_name': {'required': False},
             'last_name': {'required': False},
             'email': {'required': False},
+            'password': {'required': False},
         }
+
 
 class UpdatePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField
-
