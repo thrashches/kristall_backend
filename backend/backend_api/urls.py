@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
@@ -10,6 +11,7 @@ router_goods.register(r'menu', CategoryViewSet, basename='menu')
 router_goods.register(r'goods', ProductViewSet, basename='products')
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('users/', ChangeUserDataViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}),
          name='user-detail'),
     path('users/me/', ChangeUserDataViewSet.as_view({'put': 'me'}), name='user-change-password'),
