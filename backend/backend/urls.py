@@ -2,17 +2,12 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
-
-
 from backend.swagger_shema import schema_view
 from backend_api.urls import router_goods
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include(router_goods.urls)),
-    path('api/v1/auth/', include('authorization.urls')),
-    path('api/v1/users/', include('backend_api.urls')),
+    path('api/v1/', include('backend_api.urls')),
 
 
 

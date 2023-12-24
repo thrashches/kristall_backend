@@ -294,80 +294,12 @@ class CreateAuthLinks(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ChangeUserDataViewSet2(viewsets.ViewSet):
-    """ХМ....
-      Теперь непонятно как добиться:
-      /users/ -> get -> user_info
-      /users/ -> put -> update_user_info
-      /users/ -> delete -> self_kill
-      С помощью экшенов получается только /users/user_info и тд
-      Как сделать экшн который не добаляется в урл я не понял.
-      2 варианта тебе вьюхи. внизу еще одна
-    """
-    model_class = CrystalUser
-    serializer_class = ChangeUserDataSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        username = self.request.user.username
-        user = self.model_class.objects.get(username=username)
-        return user
-
-    @swagger_auto_schema(
-        operation_description="Retrieve user info",
-        responses={200: ChangeUserDataSerializer()},
-        permission_classes=[IsAuthenticated]
-    )
-    @action(detail=False, methods=['get'], url_path='me')
-    def user_info(self, request):
-        user = self.get_object()
-        serialized_user = self.serializer_class(user)
-        return Response(serialized_user.data, status=200)
-
-    @action(detail=False, methods=['put'], url_path='me')
-    def update_user_info(self, request):
-        user = self.get_object()
-        data = self.request.data
-        serializer = self.serializer_class(user, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=400)
-
-    @action(detail=False, methods=['delete'], url_path='me')
-    def user_self_kill(self, request, *args, **kwargs):
-        user = request.user
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False, url_path='password_change', methods=['put'])
-    def me(self, request):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = request.user
-            new_password = serializer.validated_data.get('new_password')
-            if not new_password:
-                return Response({"message": "Для изменения пароля требуется ввести новый пароль"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            user.set_password(new_password)
-            user.save()
-            return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
-        return Response({"message": f"Хотя бы одно поле должно быть заполнено."}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class ChangeUserDataViewSet(viewsets.ViewSet):
     """User handler"""
     model_class = CrystalUser
     serializer_class = ChangeUserDataSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-
-
-    def get_object(self):
-        username = self.request.user.username
-        user = self.model_class.objects.get(username=username)
-        return user
 
     @swagger_auto_schema(
 
@@ -377,13 +309,14 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
                 properties={
                     'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s first name'),
                     'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s last name'),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL, description='User\'s email'),
+                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
+                                            description='User\'s email'),
                 },
             ),
         }
     )
     def retrieve(self, request):
-        user = self.get_object()
+        user = self.request.user
         serialized_user = self.serializer_class(user)
         return Response(serialized_user.data, status=200)
 
@@ -413,7 +346,7 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
         },
     )
     def update(self, request):
-        user = self.get_object()
+        user = self.request.user
         serializer = self.serializer_class(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -424,7 +357,7 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
         responses={204: "No Content"}
     )
     def destroy(self, request):
-        user = self.get_object()
+        user = self.request.user
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -445,7 +378,7 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
     def me(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
-            user = request.user
+            user = self.request.user
             new_password = serializer.validated_data.get('new_password')
             if not new_password:
                 return Response({"message": "Для изменения пароля требуется ввести новый пароль"},
