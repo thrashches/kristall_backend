@@ -1,6 +1,5 @@
 
 from django.urls import path
-
 from authorization.views import ObtainTokenByGoogleCode, CreateAuthLinks, ObtainTokenByPsw, ObtainTokenByVkCode, \
     ObtainTokenByPhone, creating_google_oauth_test, creating_vk_oauth_test
 
