@@ -1,4 +1,4 @@
-import os.path
+import os
 from pathlib import Path
 
 from backend.secret import GOOGLE_SECRET, VK_SECRET
@@ -6,9 +6,9 @@ from backend.secret import GOOGLE_SECRET, VK_SECRET
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)'
+SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)')
 
-DEBUG = True
+DEBUG = int(os.getenv("DEBUG", 1))
 
 ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1', 'localhost']
 
@@ -68,9 +68,15 @@ DATABASES = {
     #     'HOST': 'localhost',
     #     'PORT': '5432',
     # }
+
+
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv("DB_ENGINE", 'django.db.backends.sqlite3'),
+        'NAME': os.getenv("DB_NAME", BASE_DIR / 'db.sqlite3'),
+        'PORT': os.getenv("DB_PORT", 5432),
+        'USER': os.getenv("POSTGRES_USER", ""),
+        'PASSWORD': os.getenv("POSTGRES_PASSWORD", ""),
+        'HOST': os.getenv("DB_HOST", ""),
     }
 }
 
@@ -122,8 +128,8 @@ LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_kristall')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media_kristall')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'

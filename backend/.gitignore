@@ -18,6 +18,7 @@ ENV/
 
 # Media files
 media/
+product_images
 
 # Static files
 staticfiles/

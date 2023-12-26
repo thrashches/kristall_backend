@@ -2,6 +2,36 @@
 
 Бэкенд для сайта кондитерской "Кристалл".
 
+## Развертывание приложения
+
+Клонируем репозиторий:
+```bash
+git clone git@github.com:thrashches/kristall_backend.git
+cd kristall_backend/kristall_infra
+```
+
+Создаем файл с настройками и запускаем сервисы:
+```bash
+cp .env.example .env
+docker-compose up -d
+```
+
+Смотрим как называется сервис с бэком:
+```bash
+user@host kristall_infra % docker ps
+CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                    NAMES
+5909cc162a53   nginx:alpine             "/docker-entrypoint.…"   4 minutes ago   Up 4 minutes   0.0.0.0:80->80/tcp       kristall_infra-nginx-1
+e324d7179c8e   kristall_infra-backend   "gunicorn backend.ws…"   4 minutes ago   Up 4 minutes   0.0.0.0:8000->8000/tcp   kristall_infra-backend-1
+58dd82d82338   postgres:16-alpine       "docker-entrypoint.s…"   4 minutes ago   Up 4 minutes   5432/tcp                 kristall_infra-db-1
+```
+
+Выполняем миграции и собираем статику:
+```bash
+docker exec -it kristall_infra-backend-1 python manage.py migrate
+docker exec -it kristall_infra-backend-1 python manage.py collectstatic --no-input
+docker exec -it kristall_infra-backend-1 python manage.py createsuperuser
+```
+
 ## Требования к оформлению кода и коммитов
 
 1. Каждый разработчик работает над отдельной фичей в отдельной ветке.
