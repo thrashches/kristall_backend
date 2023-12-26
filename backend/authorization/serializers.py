@@ -40,7 +40,7 @@ class ChangeUserDataSerializer(serializers.ModelSerializer):
         }
 
 
-class ChangeUserPasswordSerializer(serializers.ModelSerializer):
+class ChangeUserPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
 

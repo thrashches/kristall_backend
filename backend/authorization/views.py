@@ -304,12 +304,23 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-    @swagger_auto_schema(method='put', request_body=ChangeUserDataSerializer, response_body=ChangeUserDataSerializer,)
-    @swagger_auto_schema(method='get', response_body=ChangeUserDataSerializer)
-    @swagger_auto_schema(method='delete')
+    @swagger_auto_schema(
+        method='put',
+        request_body=ChangeUserDataSerializer,
+        responses={
+            200: ChangeUserDataSerializer,
+            400: "Неправильные данные",
+        }
+    )
+    @swagger_auto_schema(
+        method='get',
+        responses={200: ChangeUserDataSerializer,
+        }
+    )
+    @swagger_auto_schema(method='delete',responses={204:'Пользователь успешно удалён'})
     @action(detail=False, url_path='me', methods=['put', 'get', 'delete'])
     def me(self, request):
-        """Получить/Изменить/Удалить данные пользователя"""
+        """Получить/Изменить/Удалить данные пользователя  (имя,фамилия, почта)"""
         if request.method == "GET":
             user = self.get_object()
             serializer = ChangeUserDataSerializer(instance=user)
@@ -327,8 +338,14 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @swagger_auto_schema(method='put', request_body=ChangeUserPasswordSerializer,
+                         responses={
+                             200:'Пароль успешно изменён',
+                             400: "Неправильные данные",
+                         })
     @action(detail=False, url_path='me/change_password', methods=['put'])
     def change_passsword(self, request):
+        """Изменить пароль пользователя"""
         user = self.get_object()
         serializer = ChangeUserPasswordSerializer(instance=user, data=request.data)
         if serializer.is_valid():
@@ -336,5 +353,5 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
             user.set_password(new_password)
             user.save()
             return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
-        return Response({"message": f"Неправильные данные: {serializer.errors}"},
+        return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
