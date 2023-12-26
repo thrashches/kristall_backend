@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
+    'basket',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET

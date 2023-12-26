@@ -1,14 +1,15 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
-
 from authorization.views import UserViewSet, ObtainTokenByPsw, ObtainTokenByGoogleCode, ObtainTokenByVkCode, \
     ObtainTokenByPhone, CreateAuthLinks, creating_google_oauth_test, creating_vk_oauth_test
 from backend_api.views import CategoryViewSet, ProductViewSet
+from basket.views import BasketViewSet
 
 router = SimpleRouter()
 router.register('menu', CategoryViewSet, basename='menu')
 router.register('goods', ProductViewSet, basename='products')
 router.register('users', UserViewSet, basename='user')
+router.register('basket', BasketViewSet, basename='basket')
 
 urlpatterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),
