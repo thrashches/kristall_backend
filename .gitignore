@@ -21,3 +21,7 @@ local_settings.py
 *.log
 .DS_Store
 db.sqlite3
+
+.pg_data
+.static
+.media
