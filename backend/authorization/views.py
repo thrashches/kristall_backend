@@ -3,13 +3,17 @@ from django.conf import settings
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CrystalUser
-from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer
+from backend_api.serializers import ErrorSerializer, SuccessSerializer
+from .models import CrystalUser, MAIL
+from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer, \
+    UserSerializer, PasswordSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
 
@@ -27,7 +31,7 @@ def creating_vk_oauth_test(request):
         user_id, first_name, last_name = get_vk_user_info(token)
         text += f"user_id {user_id} , first_name {first_name} , last_name {last_name}"
     else:
-        text += f"we have a problem with token response because {token_response.text}"
+        text += f"Проблемы с токеном: {token_response.text}"
     return HttpResponse(text)
 
 
@@ -46,11 +50,12 @@ def creating_google_oauth_test(request):
         email, name = get_user_info(access_token)
         text += f"succeed {email} {name}"
     else:
-        text += f'fail with google response because {token_response.text}'
+        text += f'Проблема при ответе сервиса google {token_response.text}'
     return HttpResponse(text)
 
 
 class CreateUserByPsw(APIView):
+    # FIXME: Это все зарефакторить, тут кровь из глаз
     serializer_class = AuthPasswordSerializer
 
     @swagger_auto_schema(
@@ -68,11 +73,11 @@ class CreateUserByPsw(APIView):
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type='password', identifier=username)
-                return Response({'result': 'This username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                user = CrystalUser.objects.get(auth_type=MAIL, identifier=username)
+                return Response({'result': 'Такой пользователь уже существует!'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
                 user = CrystalUser.objects.create_user(identifier=username, password=password, auth_type='password')
-                return Response({'result': f'created {user}'}, status=status.HTTP_201_CREATED)
+                return Response({'result': f'Пользователь создан!'}, status=status.HTTP_201_CREATED)
 
 
 class ObtainTokenByPsw(APIView):
@@ -98,14 +103,14 @@ class ObtainTokenByPsw(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             try:
-                user = CrystalUser.objects.get(auth_type='password', identifier=email)
+                user = CrystalUser.objects.get(auth_type=MAIL, email=email)
                 if user.check_password(password):
                     token, created = Token.objects.get_or_create(user=user)
                     return Response({'token': token.key}, status=status.HTTP_200_OK)
                 else:
-                    return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Неверный пароль!'}, status=status.HTTP_400_BAD_REQUEST)
             except CrystalUser.DoesNotExist:
-                return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'Такого пользователя не существует!'}, status=status.HTTP_404_NOT_FOUND)
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -288,3 +293,64 @@ class CreateAuthLinks(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(viewsets.ViewSet):
+    model_class = CrystalUser
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    @swagger_auto_schema(
+        operation_description="Получение и изменение информации о залогиненном пользователе",
+        methods=["PUT", "PATCH"],
+        request_body=UserSerializer,
+        responses={
+            200: UserSerializer,
+            400: ErrorSerializer,
+        }
+    )
+    @swagger_auto_schema(method="GET", responses={
+        200: UserSerializer,
+        401: ErrorSerializer,
+    })
+    @action(detail=False, methods=['put', 'patch', 'get', 'delete'])
+    def me(self, request):
+        """Получить/Изменить/Удалить данные пользователя  (имя,фамилия, почта)"""
+        if request.method == "GET":
+            user = self.get_object()
+            serializer = UserSerializer(instance=user)
+            return Response(serializer.data, status=200)
+        elif request.method in ["PUT", "PATCH"]:
+            user = self.get_object()
+            serializer = UserSerializer(instance=user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            user = self.get_object()
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(
+        request_body=PasswordSerializer,
+        responses={
+            200: SuccessSerializer,
+            400: ErrorSerializer,
+        }
+    )
+    @action(detail=False, methods=['post'])
+    def change_password(self, request):
+        """Изменить пароль пользователя"""
+        user = self.get_object()
+        serializer = PasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            new_password = serializer.validated_data.get('password')
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)

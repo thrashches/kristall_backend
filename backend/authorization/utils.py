@@ -63,7 +63,8 @@ def create_oauth_links(oauth_type: OauthWay):
             client_id = VK_OAUTH.get('client_id')
             redirect_url = VK_OAUTH.get('redirect_uri')
 
-            oauth_link = f"https://oauth.vk.com/authorize?client_id={client_id}&display=page&redirect_uri={redirect_url}&scope=email,users,friends&response_type=code&v=5.131"
+            oauth_link = f"https://oauth.vk.com/authorize?client_id={client_id}&display=page&" \
+                         f"redirect_uri={redirect_url}&scope=email,users,friends&response_type=code&v=5.131"
 
         else:
             return False, 'We dont support these kind of OAUTH only VK and GOOGLE'

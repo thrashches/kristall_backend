@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches for testing
+*.sqlite3
+*.db
+*.db.sqlite3
+
+# Log files
+*.log
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Media files
+media/
+
+# Static files
+staticfiles/
+
+# Local development settings
+local_settings.py
+
+# IDE settings
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*~
+backend/secret.py

@@ -25,25 +25,24 @@ INSTALLED_APPS = [
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
-    'orders.apps.OrdersConfig',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET
 
 VK_OAUTH = VK_SECRET
 
-# SWAGGER_SETTINGS = {
-#     'SECURITY_DEFINITIONS': {
-#         'Bearer': {
-#             'type': 'apiKey',
-#             'name': 'Authorization',
-#             'in': 'header',
-#         },
-#     },
-#     'USE_SESSION_AUTH': False,
-#     'JSON_EDITOR': True,
-#     'SHOW_REQUEST_HEADERS': True,
-# }
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        },
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SHOW_REQUEST_HEADERS': True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -4,11 +4,11 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Your API",
+        title="Kristall Api",
         default_version='v1',
-        description="Your API description",
-        terms_of_service="https://supportstation.kz/crystal/",
-        contact=openapi.Contact(email="contact@example.com"),
+        description="Support api for react app.",
+        terms_of_service=" ",
+        contact=openapi.Contact(email="fedorkuruts@gmail.com"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,

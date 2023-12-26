@@ -1,6 +1,5 @@
 import os
 from uuid import uuid4
-
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -50,7 +49,7 @@ def image_upload_path(instance, filename):
     # FIXME: Убрать из моделей
     ext = filename.split('.')[-1]
     unique_filename = f'{uuid4()}.{ext}'
-    return os.path.join('product_images',  unique_filename)
+    return os.path.join('product_images', unique_filename)
 
 
 class ProductImage(models.Model):
