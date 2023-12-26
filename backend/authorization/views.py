@@ -304,13 +304,12 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-    @swagger_auto_schema(method='put', request_body=ChangeUserDataSerializer, response_body=ChangeUserDataSerializer,
-                         operation_description="изменить данные пользователя")
-    @swagger_auto_schema(method='get', operation_description="получить данные пользователя")
-    @swagger_auto_schema(method='delete', operation_description='убить пользователя')
+    @swagger_auto_schema(method='put', request_body=ChangeUserDataSerializer, response_body=ChangeUserDataSerializer,)
+    @swagger_auto_schema(method='get', response_body=ChangeUserDataSerializer)
+    @swagger_auto_schema(method='delete')
     @action(detail=False, url_path='me', methods=['put', 'get', 'delete'])
     def me(self, request):
-        """Непонятное что то"""
+        """Получить/Изменить/Удалить данные пользователя"""
         if request.method == "GET":
             user = self.get_object()
             serializer = ChangeUserDataSerializer(instance=user)
