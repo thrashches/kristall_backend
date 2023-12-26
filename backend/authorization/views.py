@@ -304,80 +304,30 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s first name'),
-                    'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='User\'s last name'),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
-                                            description='User\'s email'),
-                },
-            ),
-        }
-    )
-    def retrieve(self, request):
-        user = self.get_object()
-        serializer = ChangeUserDataSerializer(instance=user)
-        return Response(serializer.data, status=200)
 
-    @swagger_auto_schema(
-        operation_summary="At list one field required",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='New first name'),
-                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='New last name'),
-                'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
-                                        description='New email address '),
-            },
-        ),
-        responses={
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='New first name'),
-                    'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='New last name'),
-                    'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL,
-                                            description='New email address'),
-                },
-                description='User information updated successfully.',
-            ),
-            400: "Bad Request. Please provide valid data.",
-        },
-    )
-    def update(self,request):
-        user = self.get_object()
-        serializer = ChangeUserDataSerializer(instance=user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"messages": f"Неправильные данные {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        responses={204: "No Content"}
-    )
-    def destroy(self, request):
-        user = self.get_object()
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, url_path='me', methods=['put','get','delete'])
+    def me(self,request):
+        if request.method == "GET":
+            user = self.get_object()
+            serializer = ChangeUserDataSerializer(instance=user)
+            return Response(serializer.data, status=200)
+        elif request.method == "PUT":
+            user = self.get_object()
+            serializer = ChangeUserDataSerializer(instance=user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"messages": f"Неправильные данные {serializer.errors}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif request.method =='DELETE':
+            user = self.get_object()
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
-            },
-            required=['password'],
-        ),
-        responses={
-            200: openapi.Response(description='Password changed successfully.'),
-            400: "Bad Request. Please provide valid data.",
-        }
-    )
-    @action(detail=False, url_path='me', methods=['put'])
-    def me(self, request):
+
+    @action(detail=False, url_path='me/change_password', methods=['put'])
+    def change_passsword(self, request):
         user = self.get_object()
         serializer = ChangeUserPasswordSerializer(instance=user, data=request.data)
         if serializer.is_valid():

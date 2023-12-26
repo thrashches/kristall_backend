@@ -49,10 +49,8 @@ class OrderItemSerializer(serializers.Serializer):
 class OrderSerializer(serializers.Serializer):
     items = OrderItemSerializer(many=True)
 
+
     def create(self, validated_data):
-        # НАРИМЕР КАК как результат вызыва save() получать instance а не validate data
-        # что бы получив сериалайзер использвать метод data
-        print('method create')
         items = validated_data.pop('items')
         user = self.context['request'].user
         order = Order.objects.create(user=user)
@@ -61,8 +59,8 @@ class OrderSerializer(serializers.Serializer):
         validated_data = {**validated_data, **order_data}
         return validated_data
 
-    def update(self, instance, validated_data):
-        print('method update')
+    def custom_update(self):
+        validated_data = self.validated_data
         income_items = validated_data.pop('items')
         user = self.context['request'].user
         latest_order = Order.objects.filter(user=user, status='in_basket').order_by('-created_at').first()
@@ -95,13 +93,19 @@ class OrderSerializer(serializers.Serializer):
         summary = 0
         for item in items:
             product = item.get('product')
-            item = OrderItem.objects.create(order=order, **item)
+            quantity = item.get('quantity')
+            OrderItem.objects.create(order=order, **item)
             try:
                 image = ProductImage.objects.get(product=product)
                 image_path = image.image_file
             except ProductImage.DoesNotExist:
                 image_path = None
-            item_data = {"id": product.id, "name": product.title, "price": product.price, "image": image_path}
+
+            #ВИдимо это всё должно через сериализаторы быть.
+            item_data = {"product": {"id": product.id, "name": product.title, "price": product.price,
+                                     "image": image_path},
+                         "quantity": quantity
+                         }
             items_data.append(item_data)
-            summary += product.price
+            summary += product.price * quantity
         return items_data, summary

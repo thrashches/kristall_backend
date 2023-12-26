@@ -63,7 +63,7 @@ class OrderViewSet(viewsets.ViewSet):
     def update_order(self, request):
         serializer = OrderSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            data = serializer.save()
+            data = serializer.custom_update()
             return Response(data)
         return Response(serializer.errors, status=400)
 
