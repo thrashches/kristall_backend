@@ -304,10 +304,13 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-
-
-    @action(detail=False, url_path='me', methods=['put','get','delete'])
-    def me(self,request):
+    @swagger_auto_schema(method='put', request_body=ChangeUserDataSerializer, response_body=ChangeUserDataSerializer,
+                         operation_description="изменить данные пользователя")
+    @swagger_auto_schema(method='get', operation_description="получить данные пользователя")
+    @swagger_auto_schema(method='delete', operation_description='убить пользователя')
+    @action(detail=False, url_path='me', methods=['put', 'get', 'delete'])
+    def me(self, request):
+        """Непонятное что то"""
         if request.method == "GET":
             user = self.get_object()
             serializer = ChangeUserDataSerializer(instance=user)
@@ -318,13 +321,12 @@ class ChangeUserDataViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response({"messages": f"Неправильные данные {serializer.errors}"},
+            return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-        elif request.method =='DELETE':
+        elif request.method == 'DELETE':
             user = self.get_object()
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
 
     @action(detail=False, url_path='me/change_password', methods=['put'])
     def change_passsword(self, request):
