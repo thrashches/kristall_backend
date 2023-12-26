@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
-    'orders.apps.OrdersConfig',
 ]
 
 GOOGLE_OAUTH = GOOGLE_SECRET

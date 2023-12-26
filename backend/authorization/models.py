@@ -62,3 +62,6 @@ class CrystalUser(AbstractUser):
                 name='unique_auth_type_identifier',
             )
         ]
+
+    def __str__(self):
+        return self.username

@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+
 from authorization.models import CrystalUser
 
 
@@ -21,28 +23,27 @@ class OAuthUrlsSerializer(serializers.Serializer):
     vk_url = serializers.CharField()
 
 
-class ChangeUserDataSerializer(serializers.ModelSerializer):
-
-    def validate(self, data):
-        fields_to_check = ['first_name', 'last_name', 'email']
-        non_empty_fields = [field for field in fields_to_check if data.get(field)]
-        if not non_empty_fields:
-            raise serializers.ValidationError("At least one field should not be empty.")
-        return data
-
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrystalUser
-        fields = ['first_name', 'last_name', 'email']
-        extra_kwargs = {
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'email': {'required': False},
-        }
+        fields = [
+            'first_name',
+            'last_name',
+            'email',  # FIXME: Сделать проверку почты при смене
+            'auth_type',
+            'identifier',
+            'id',
+        ]
+        read_only_fields = [
+            'id',
+            'auth_type',
+            'identifier',
+        ]
 
 
-class ChangeUserPasswordSerializer(serializers.Serializer):
+class PasswordSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
-
-class UpdatePasswordSerializer(serializers.ModelSerializer):
-    password = serializers.CharField
+    def validate_password(self, value):
+        validate_password(value)
+        return value
