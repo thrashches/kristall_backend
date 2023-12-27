@@ -1,5 +1,4 @@
 from django.db import models
-
 from authorization.models import CrystalUser
 from goods.models import Product
 
@@ -11,12 +10,12 @@ class Order(models.Model):
         ('done', 'Исполнен'),
         ('desline', 'Отменен'),
     ]
-
     number = models.IntegerField( null=True,blank=False)
     user = models.ForeignKey(CrystalUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='in_basket')
+
     def __str__(self):
         return f"Order {self.id} user {self.user}"
 
@@ -26,4 +25,4 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"OrderItem {self.id} for Order {self.order.number}"  # Вернуть строковое представление объекта
+        return f"OrderItem {self.id} for Order {self.order.number}"

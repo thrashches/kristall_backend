@@ -1,5 +1,4 @@
 import uuid
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -33,7 +32,6 @@ class CrystalUser(AbstractUser):
         blank=False,
         verbose_name='Идентификатор',
     )
-
     code = models.CharField(
         max_length=20,
         null=True,
@@ -64,4 +62,4 @@ class CrystalUser(AbstractUser):
         ]
 
     def __str__(self):
-        return self.username
+        return self.username + " | " + self.auth_type + " | " + self.identifier

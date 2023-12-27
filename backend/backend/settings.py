@@ -8,8 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-s%%s73c!d69xuove83bhgy4jlloypvutr2$p%zu&x_fb)3*4w)')
 
-DEBUG = int(os.getenv("DEBUG", 1))
-
+# DEBUG = int(os.getenv("DEBUG", 1))
+DEBUG = True
 ALLOWED_HOSTS = ['supportstation.kz', 'www.supportstation.kz', '127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
@@ -65,11 +65,11 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': 'crystal',
     #     'USER': 'postgres',
-    #     'PASSWORD': "12345",
+    #     'PASSWORD': "root",
     #     'HOST': 'localhost',
     #     'PORT': '5432',
     # }
-
+    #
 
     'default': {
         'ENGINE': os.getenv("DB_ENGINE", 'django.db.backends.sqlite3'),
