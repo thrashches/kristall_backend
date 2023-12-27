@@ -20,12 +20,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'drf_yasg',
     'rest_framework.authtoken',
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 GOOGLE_OAUTH = GOOGLE_SECRET
 
@@ -47,6 +50,7 @@ SWAGGER_SETTINGS = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
