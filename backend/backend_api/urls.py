@@ -9,7 +9,7 @@ router = SimpleRouter()
 router.register('menu', CategoryViewSet, basename='menu')
 router.register('goods', ProductViewSet, basename='products')
 router.register('users', UserViewSet, basename='user')
-router.register('basket', BasketViewSet, basename='basket')
+router.register('', BasketViewSet, basename='basket')
 
 urlpatterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),
