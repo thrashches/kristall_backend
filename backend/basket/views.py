@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, pagination
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,6 +6,12 @@ from rest_framework.response import Response
 from basket.models import Order, OrderItem
 from basket.serializers import orderIncomeSerializer, orderSerializer
 from goods.models import Product
+
+
+class MyPagination(pagination.PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class BasketViewSet(viewsets.ViewSet):
@@ -24,11 +30,12 @@ class BasketViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['put', 'get', 'post'])
     def basket(self, request):
+
         item_serializers, items_queryset, summary = [], [], 0
         items_data = []
+        paginator = MyPagination()
 
         if request.method == 'POST':
-
             income = self.get_serializer()
             if not income.is_valid():
                 return Response(income.errors, status=400)
@@ -43,7 +50,6 @@ class BasketViewSet(viewsets.ViewSet):
                 quantity = income_items[product.id]
                 if images:
                     images_url_list = [image.image_file.url for image in images]
-                    # FIXME: А вдруг картинок будет много на один продукт может возвращать не строку а список всё таки? #image = images_url_list
                     image = images_url_list[0]
                 else:
                     image = None
@@ -69,10 +75,6 @@ class BasketViewSet(viewsets.ViewSet):
                 'status': order.status,
                 'items': items_data
             }
-
-            answer = orderSerializer(data=order_data)
-            answer.is_valid()
-            return Response(answer.data, status=200)
 
         elif request.method == 'PUT':
             income = self.get_serializer()
@@ -85,14 +87,15 @@ class BasketViewSet(viewsets.ViewSet):
             order = Order.objects.filter(status='in_basket', user=user).latest('created_at')
             if not order:
                 return Response(status=400)
+
             order_items = OrderItem.objects.filter(order=order)
             order_items.delete()
+
             for product in products:
                 images = product.images.all()
                 quantity = income_items[product.id]
                 if images:
                     images_url_list = [image.image_file.url for image in images]
-                    # FIXME: А вдруг картинок будет много на один продукт может возвращать не строку а список всё таки? #image = images_url_list
                     image = images_url_list[0]
                 else:
                     image = None
@@ -119,21 +122,14 @@ class BasketViewSet(viewsets.ViewSet):
                 'items': items_data
             }
 
-            answer = orderSerializer(data=order_data)
-            answer.is_valid()
-            return Response(answer.data, status=200)
-
         elif request.method == 'GET':
-
             user = self.get_object()
             order = Order.objects.filter(status='in_basket', user=user).latest('created_at')
+
             items_set = OrderItem.objects.filter(order=order)
             quantity_dict = {item.product.id: item.quantity for item in items_set}
             products_pk = quantity_dict.keys()
             products = self.get_queryset(products_pk)
-
-            user = self.get_object()
-            order = Order.objects.create(user=user)
 
             for product in products:
                 images = product.images.all()
@@ -167,6 +163,7 @@ class BasketViewSet(viewsets.ViewSet):
                 'items': items_data
             }
 
-            answer = orderSerializer(data=order_data)
-            answer.is_valid()
-            return Response(answer.data, status=200)
+        answer = orderSerializer(data=order_data)
+        answer.is_valid()
+        paginated_response = paginator.get_paginated_response(answer.data)
+        return Response(paginated_response, status=200)
