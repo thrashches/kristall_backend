@@ -13,10 +13,11 @@ from goods.serializers import CategorySerializer, ProductSerializer, ProductImag
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = None
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter(visible=True)
     serializer_class = ProductSerializer
 
     def get_queryset(self):

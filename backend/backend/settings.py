@@ -104,6 +104,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
     'UPLOADED_FILES_USE_URL': True,
 }
 
@@ -124,6 +125,10 @@ TEMPLATES = [
 ]
 
 
+
+
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
 
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 

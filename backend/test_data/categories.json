@@ -1,0 +1,122 @@
+[
+  {
+    "model": "goods.category",
+    "pk": 1,
+    "fields": {
+      "name": "Летнее меню",
+      "slug": "letnee-menyu"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 2,
+    "fields": {
+      "name": "Кофе и чай",
+      "slug": "kofe-i-chaj"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 3,
+    "fields": {
+      "name": "Холодные напитки",
+      "slug": "holodnye-napitki"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 4,
+    "fields": {
+      "name": "Комбо",
+      "slug": "kombo"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 5,
+    "fields": {
+      "name": "Shoko Go",
+      "slug": "shoko-go"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 6,
+    "fields": {
+      "name": "Конструктор завтраков",
+      "slug": "konstruktor-zavtrakov"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 7,
+    "fields": {
+      "name": "Блинчики",
+      "slug": "blinchiki"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 8,
+    "fields": {
+      "name": "Пицца от Eazzy Pizza & Gelato",
+      "slug": "picca-ot-eazzy-pizza-gelato"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 9,
+    "fields": {
+      "name": "Супы",
+      "slug": "supy"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 10,
+    "fields": {
+      "name": "Горячие блюда",
+      "slug": "goryachie-blyuda"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 11,
+    "fields": {
+      "name": "Сэндвичи",
+      "slug": "sendvichi"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 12,
+    "fields": {
+      "name": "Только в доставке",
+      "slug": "tolko-v-dostavke"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 13,
+    "fields": {
+      "name": "Салаты",
+      "slug": "salaty"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 14,
+    "fields": {
+      "name": "Десерты",
+      "slug": "deserty"
+    }
+  },
+  {
+    "model": "goods.category",
+    "pk": 15,
+    "fields": {
+      "name": "Добавки и соусы",
+      "slug": "dobavki-i-sousy"
+    }
+  }
+]
