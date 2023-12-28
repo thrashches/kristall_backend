@@ -63,12 +63,15 @@ class OrderSerializer(serializers.Serializer):
         return representation
 
     def create(self, validated_data):
+
         queryset = []
         items_dict = self._items_dict(validated_data)
         user = self.context.get('view').request.user
+
         order = Order.objects.create(user=user)
         pk_ = items_dict.keys()
         product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
+
         for product in product_with_images:
             quantity = items_dict[product.id]
             queryset.append(OrderItem(order=order,
@@ -78,6 +81,7 @@ class OrderSerializer(serializers.Serializer):
         return order
 
     def update(self, instance, validated_data):
+
         queryset = []
         order = instance
         items_dict = self._items_dict(validated_data)
