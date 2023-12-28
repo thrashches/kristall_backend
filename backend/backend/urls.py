@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from backend.swagger_shema import schema_view
 
-
 urlpatterns = [
     path('api/v1/', include('backend_api.urls')),
     path('admin/', admin.site.urls),
