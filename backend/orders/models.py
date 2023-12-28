@@ -8,9 +8,6 @@ DONE = 'done'
 DECLINE = 'decline'
 
 
-
-
-
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
         (CART, 'В корзине'),

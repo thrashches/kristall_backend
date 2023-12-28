@@ -50,7 +50,8 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
         responses={200: openapi.Response('Успех', OrderSerializer()),
                    400: openapi.Response('Ошибка запроса')},
         operation_summary=" ",
-        operation_description="Обновляет часть содержимого корзины, например, изменяет количество определенного OrderItem."
+        operation_description="Обновляет часть содержимого корзины, например, изменяет количество определенного "
+                              "OrderItem."
     )
     @action(detail=False, methods=['PUT', 'PATCH', 'DELETE'])
     def cart(self, request):

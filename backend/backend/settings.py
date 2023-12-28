@@ -127,8 +127,7 @@ TEMPLATES = [
 
 
 
-CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
+
 
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 
