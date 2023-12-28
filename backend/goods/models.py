@@ -12,6 +12,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ['id']
 
     def save(self, *args, **kwargs):
         if not self.slug:
