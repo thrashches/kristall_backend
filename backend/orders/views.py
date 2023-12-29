@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from orders.models import Order, DONE, WORK, CART, DECLINE
 from orders.permissions import IsOrderOwner
-from orders.serializers import OrderSerializer
+from orders.serializers import OrderSerializer, OrderShemaSerializer
 
 
 class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
@@ -35,14 +35,14 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(
         method='delete',
-        responses={204: openapi.Response('Успешно'), 400: openapi.Response('Ошибка запроса')},
+        responses={204: openapi.Response('Успешно', OrderShemaSerializer()), 400: openapi.Response('Ошибка запроса')},
         operation_summary="Очистить корзину",
         operation_description="Удаляет все элементы  OrderItems из Orders со статусом CART."
     )
     @swagger_auto_schema(
         method='put',
         request_body=OrderSerializer(),
-        responses={200: openapi.Response('Успешное', OrderSerializer()),
+        responses={200: openapi.Response('Успешное', OrderShemaSerializer()),
                    400: openapi.Response('Ошибка запроса')},
         operation_summary="Добавить в корзину товар",
         operation_description="Добавить к Order присланные OrderItems."
@@ -50,7 +50,7 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
     @swagger_auto_schema(
         method='patch',
         request_body=OrderSerializer(),
-        responses={200: openapi.Response('Успех', OrderSerializer()),
+        responses={200: openapi.Response('Успех', OrderShemaSerializer()),
                    400: openapi.Response('Ошибка запроса')},
         operation_summary="Удалить товар из корзины",
         operation_description="Ищет по product id OrdeItem который относится к последниму Order и удаляет его"

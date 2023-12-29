@@ -11,10 +11,26 @@ instance = super().update(instance, validated_data) вот это главная
 хотяя может так меньше запросов в бд...
 
 """
-class OrderItemForSchemaSerializer(serializers.Serializer):
-    product
 
 
+class OrderShemaProductSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    price = serializers.DecimalField(decimal_places=2,max_digits=10)
+    image = serializers.CharField()
+
+
+class OrderShemaItemSerializer(serializers.Serializer):
+    product = OrderShemaProductSerializer()
+    quantity = serializers.IntegerField(write_only=True)
+
+
+class OrderShemaSerializer(serializers.Serializer):
+    items = OrderShemaItemSerializer(many=True)
+    id = serializers.IntegerField()
+    number = serializers.CharField()
+    price = serializers.IntegerField()
+    status = serializers.CharField()
 
 
 class OrderItemSerializer(serializers.Serializer):
