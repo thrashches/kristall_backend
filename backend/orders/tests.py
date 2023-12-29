@@ -67,6 +67,13 @@ class ProductTestCase(TestCase):
         ]
         }
 
+        data2 = {"items": [
+            {"product": 2,
+             "quantity": 10}
+        ]
+        }
+
+
         result = {'items':
             [
                 {'product': {'id': 1,
@@ -86,25 +93,32 @@ class ProductTestCase(TestCase):
 
         got_data = kill_image(response.data)
 
-
+        print('[CREATE ORDER]')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(expected_data, got_data)
         #ордер в статус в работе
         order = Order.objects.last()
         order.status = WORK
         order.save()
-
         # получить список заказов
+        print('[ORDER LIST]')
         response = self.client.get(url)
         got_data = kill_image(response.data.get('results')[0])
         self.assertEqual(expected_data, got_data)
-
         # получить заказ по айди
+        print('[GET ORDER BY ID]')
         response = self.client.get(f"{url}1/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         got_data = response.data
         got_data = kill_image(got_data)
         self.assertEqual(expected_data, got_data)
+        response = self.client.put(f"{url}/cart/",data=data2,format='json')
+        print(response)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+
+
+
+
 
 
 

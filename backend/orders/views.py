@@ -49,11 +49,16 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
         request_body=OrderSerializer(),
         responses={200: openapi.Response('Успех', OrderSerializer()),
                    400: openapi.Response('Ошибка запроса')},
-        operation_summary=" ",
-        operation_description="Обновляет часть содержимого корзины, например, изменяет количество определенного "
-                              "OrderItem."
+        operation_summary="Удалить товар из корзины",
+        operation_description="Ищет по product id OrdeItem который относится к последниму Order и удаляет его"
     )
-    @action(detail=False, methods=['PUT', 'PATCH', 'DELETE'])
+    @swagger_auto_schema(
+        method='get',
+        responses={200: openapi.Response('Успешно'), 400: openapi.Response('Ошибка запроса')},
+        operation_summary="Создать заказ из корзины",
+        operation_description="Изменяет статус последнего Order со статусом CART на WORK"
+    )
+    @action(detail=False, methods=['PUT', 'PATCH', 'DELETE','GET'])
     def cart(self, request):
         queryset = Order.objects.filter(user=self.request.user, status__in=[CART])
         order = queryset.latest('created_at')

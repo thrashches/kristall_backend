@@ -69,7 +69,6 @@ class OrderSerializer(serializers.Serializer):
         queryset = []
         items_dict = self._items_dict(validated_data)
         user = self.context.get('view').request.user
-
         order = Order.objects.create(user=user)
         pk_ = items_dict.keys()
         product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
@@ -97,18 +96,19 @@ class OrderSerializer(serializers.Serializer):
                                           product=product,
                                           quantity=quantity))
             OrderItem.objects.bulk_create(queryset)
-    # FIXME: Я не понял механизм отправления в работу из корзины. Написале его тут но чет мне подксказывает ты имелл ввиду что то иное
-            order.status = WORK
-            order.save()
             return order
 
         elif self.context['view'].request.method == 'PATCH':
-            items = OrderItem.objects.filter(product__id__in=pk_)
+            items = OrderItem.objects.filter(order=order, product__id__in=pk_)
             items.delete()
-            order.status = WORK
             return order
 
         elif self.context['view'].request.method == 'DELETE':
             items = OrderItem.objects.filter(order=order)
             items.delete()
+            return order
+
+        elif self.context['view'].request.method == 'GET':
+            order.status = WORK
+            order.save()
             return order
