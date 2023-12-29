@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotAuthenticated, NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from orders.models import Order, DONE, WORK, CART, DECLINE
+from orders.models import Order, DONE, WORK, CART, DECLINE, OrderItem
 from orders.permissions import IsOrderOwner
 from orders.serializers import OrderSerializer, OrderShemaSerializer
 
@@ -65,10 +65,17 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
     def cart(self, request):
         queryset = Order.objects.filter(user=self.request.user, status__in=[CART])
         order = queryset.latest('created_at')
-        serializer = self.get_serializer(order, data=request.data)
-        if request.method in ['PUT', 'PATCH', 'DELETE']:
+        if request.method in ['PUT', 'PATCH']:
+            serializer = self.get_serializer(order, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=200)
             else:
-                return Response(serializer.errors, status=200)
+                return Response(serializer.errors, status=400)
+        elif request.method in ['DELETE']:
+            items = OrderItem.objects.filter(order=order)
+            items.delete()
+            return Response(status=203)
+
+
+

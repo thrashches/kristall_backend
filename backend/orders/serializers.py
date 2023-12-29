@@ -16,7 +16,7 @@ instance = super().update(instance, validated_data) вот это главная
 class OrderShemaProductSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
-    price = serializers.DecimalField(decimal_places=2,max_digits=10)
+    price = serializers.DecimalField(decimal_places=2, max_digits=10)
     image = serializers.CharField()
 
 
@@ -81,7 +81,6 @@ class OrderSerializer(serializers.Serializer):
 
         if self.context.get('view').action == 'list':
             representation.pop('status')
-
         return representation
 
     def create(self, validated_data):
@@ -102,14 +101,16 @@ class OrderSerializer(serializers.Serializer):
         return order
 
     def update(self, instance, validated_data):
-
+        # FIXME : ДОБАВИТЬ ЛОГИКУ ПРОВЕРКИ корзины. ТО ЕСТЬ если добавляется товар который уже есть в корзине, должно quantity увеличиваться
         queryset = []
         order = instance
         items_dict = self._items_dict(validated_data)
         pk_ = items_dict.keys()
         product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
 
+
         if self.context['view'].request.method == 'PUT':
+
             for product in product_with_images:
                 quantity = items_dict[product.id]
                 queryset.append(OrderItem(order=order,
@@ -119,14 +120,11 @@ class OrderSerializer(serializers.Serializer):
             return order
 
         elif self.context['view'].request.method == 'PATCH':
+
             items = OrderItem.objects.filter(order=order, product__id__in=pk_)
             items.delete()
             return order
 
-        elif self.context['view'].request.method == 'DELETE':
-            items = OrderItem.objects.filter(order=order)
-            items.delete()
-            return order
 
         elif self.context['view'].request.method == 'GET':
             order.status = WORK
