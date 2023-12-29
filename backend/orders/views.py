@@ -4,7 +4,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from orders.models import Order, DONE, WORK, CART
+from orders.models import Order, DONE, WORK, CART, DECLINE
 from orders.permissions import IsOrderOwner
 from orders.serializers import OrderSerializer
 
@@ -18,7 +18,7 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Order.objects.filter(user=self.request.user, status__in=[WORK, DONE])
+            return Order.objects.filter(user=self.request.user, status__in=[WORK, DONE, DECLINE]).order_by('id')
         else:
             return Order.objects.none()
 

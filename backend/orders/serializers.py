@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 from rest_framework import serializers
 from goods.models import Product, ProductImage
-from orders.models import Order, OrderItem
+from orders.models import Order, OrderItem, WORK
 
 """
 instance = super().update(instance, validated_data) вот это главная функция у меня должна быть.
@@ -26,6 +26,7 @@ class OrderSerializer(serializers.Serializer):
         return {item['product']: item['quantity'] for item in items}
 
     def to_representation(self, instance: Order):
+
         representation = super().to_representation(instance)
 
         items = (OrderItem.objects.filter(order=instance).prefetch_related(
@@ -60,6 +61,7 @@ class OrderSerializer(serializers.Serializer):
 
         if self.context.get('view').action == 'list':
             representation.pop('status')
+
         return representation
 
     def create(self, validated_data):
@@ -95,11 +97,15 @@ class OrderSerializer(serializers.Serializer):
                                           product=product,
                                           quantity=quantity))
             OrderItem.objects.bulk_create(queryset)
+    # FIXME: Я не понял механизм отправления в работу из корзины. Написале его тут но чет мне подксказывает ты имелл ввиду что то иное
+            order.status = WORK
+            order.save()
             return order
 
         elif self.context['view'].request.method == 'PATCH':
             items = OrderItem.objects.filter(product__id__in=pk_)
             items.delete()
+            order.status = WORK
             return order
 
         elif self.context['view'].request.method == 'DELETE':

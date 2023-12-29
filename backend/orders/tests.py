@@ -1,13 +1,27 @@
+from decimal import Decimal
+
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.reverse import reverse
-from rest_framework.test import APIClient, APIRequestFactory
+from rest_framework.test import APIClient
 from authorization.models import CrystalUser
 from goods.models import Category, Product, ProductImage
+from orders.models import Order, WORK
 
-"""Чето тухло как вьюсет тестировать. не через постман же."""
+
+
+
+def kill_image(data):
+    """гадкий uuid каждый раз новый генерируется в названии image"""
+    items = data.get('items')
+    for item in items:
+        product = item.get('product')
+        image = product.get('image')
+        product['image'] = len(image)
+    return items
+
 
 class ProductTestCase(TestCase):
     def setUp(self):
@@ -40,29 +54,63 @@ class ProductTestCase(TestCase):
             image = SimpleUploadedFile(product.title + ".jpg", b"file_content", content_type="image/jpeg")
             ProductImage.objects.create(product=product, image_file=image)
         self.client = APIClient()
-        self.user = CrystalUser.objects.create_user(username='testuser', password='12345')
+        self.user = CrystalUser.objects.create_user(username='testuser', password='12345ong!@')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-    def test_product_count(self):
-        self.assertEqual(Product.objects.count(), 6)
-    def test_category_count(self):
-        self.assertEqual(Category.objects.count(), 2)
-    def test_product_images_count(self):
-        self.assertEqual(ProductImage.objects.count(), 6)
-    def test_orders_case(self):
+    def test_orders_(self):
+        """create order1  get list of orders get order by id"""
         url = reverse('orders-list')
-        data = {"items":[
-            {"product":1,
-             "quantity":2},
-            {'product':2,
-             'quantity':2}
+        data = {"items": [
+            {"product": 1,
+             "quantity": 2}
         ]
-                }
+        }
 
-        factory = APIRequestFactory()
-        request = factory.post('/orders/', {'title': 'new idea'})
+        result = {'items':
+            [
+                {'product': {'id': 1,
+                             'name': 'Вафля с шоколадом',
+                             'price': Decimal('50.00'),
+                             'image': '/media/product_images/eddbbd16-928f-4c58-89ad-827e41199404.jpg'
+                             },
+                 'quantity': 2}],
+            'id': 1,
+            'number': None,
+            'price': Decimal('100.00'),
+            'status': 'in_basket'
+        }
+        expected_data = kill_image(result)
+        # создать ордер
+        response = self.client.post(url, data=data, format='json')
+
+        got_data = kill_image(response.data)
 
 
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data ,5)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(expected_data, got_data)
+        #ордер в статус в работе
+        order = Order.objects.last()
+        order.status = WORK
+        order.save()
+
+        # получить список заказов
+        response = self.client.get(url)
+        got_data = kill_image(response.data.get('results')[0])
+        self.assertEqual(expected_data, got_data)
+
+        # получить заказ по айди
+        response = self.client.get(f"{url}1/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        got_data = response.data
+        got_data = kill_image(got_data)
+        self.assertEqual(expected_data, got_data)
+
+
+
+
+
+
+
+
+
