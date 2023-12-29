@@ -11,6 +11,10 @@ instance = super().update(instance, validated_data) вот это главная
 хотяя может так меньше запросов в бд...
 
 """
+class OrderItemForSchemaSerializer(serializers.Serializer):
+    product
+
+
 
 
 class OrderItemSerializer(serializers.Serializer):

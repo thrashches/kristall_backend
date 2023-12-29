@@ -2,6 +2,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotAuthenticated, NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from orders.models import Order, DONE, WORK, CART, DECLINE
@@ -17,10 +18,12 @@ class AwesomeMarvelousFantasticViewSet(viewsets.GenericViewSet,
     permission_classes = [IsAuthenticated, IsOrderOwner]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Order.objects.filter(user=self.request.user, status__in=[WORK, DONE, DECLINE]).order_by('id')
-        else:
-            return Order.objects.none()
+        if not self.request.user.is_authenticated:
+            raise NotAuthenticated()
+        queryset = Order.objects.filter(user=self.request.user, status__in=[WORK, DONE, DECLINE]).order_by('id')
+        if not queryset.exists():
+            raise NotFound(detail="No orders found in status ['WORK','DONE','DECLINE']")
+        return queryset
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
