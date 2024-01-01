@@ -9,7 +9,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from backend_api.serializers import ErrorSerializer, SuccessSerializer
 from .models import CrystalUser, MAIL
 from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer, \
