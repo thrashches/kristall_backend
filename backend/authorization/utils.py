@@ -1,10 +1,8 @@
 import random
 from enum import Enum
-
 import requests
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
-
 from backend.settings import GOOGLE_OAUTH, VK_OAUTH
 
 

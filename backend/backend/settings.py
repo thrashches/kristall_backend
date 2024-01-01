@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 from backend.secret import GOOGLE_SECRET, VK_SECRET
 
 
@@ -26,6 +25,7 @@ INSTALLED_APPS = [
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
+    'orders.apps.OrdersApiConfig',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -124,8 +124,10 @@ TEMPLATES = [
     },
 ]
 
-# CSRF_COOKIE_SECURE = True
-# CSRF_TRUSTED_ORIGINS = ['https://supportstation.kz']
+
+
+
+
 
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 
