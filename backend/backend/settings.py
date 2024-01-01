@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'backend_api.apps.BackendApiConfig',
     'authorization.apps.AuthorizationConfig',
     'goods.apps.GoodsConfig',
-    'orders.apps.OrdersApiConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
