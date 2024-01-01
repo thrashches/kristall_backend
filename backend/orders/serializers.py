@@ -1,16 +1,8 @@
 from django.db.models import Prefetch
 from rest_framework import serializers
+
 from goods.models import Product, ProductImage
 from orders.models import Order, OrderItem, WORK
-
-"""
-instance = super().update(instance, validated_data) вот это главная функция у меня должна быть.
-
-видимо, надо больше времени .
-
-хотяя может так меньше запросов в бд...
-
-"""
 
 
 class OrderShemaProductSerializer(serializers.Serializer):
@@ -107,7 +99,6 @@ class OrderSerializer(serializers.Serializer):
         items_dict = self._items_dict(validated_data)
         pk_ = items_dict.keys()
         product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
-
 
         if self.context['view'].request.method == 'PUT':
 

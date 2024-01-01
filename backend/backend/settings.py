@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from backend.secret import GOOGLE_SECRET, VK_SECRET
 
+from backend.secret import GOOGLE_SECRET, VK_SECRET
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -73,7 +73,6 @@ DATABASES = {
     #     'PORT': '5432',
     # }
 
-
     'default': {
         'ENGINE': os.getenv("DB_ENGINE", 'django.db.backends.sqlite3'),
         'NAME': os.getenv("DB_NAME", BASE_DIR / 'db.sqlite3'),
@@ -123,11 +122,6 @@ TEMPLATES = [
         },
     },
 ]
-
-
-
-
-
 
 AUTH_USER_MODEL = 'authorization.CrystalUser'
 

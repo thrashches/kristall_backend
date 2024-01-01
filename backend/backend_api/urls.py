@@ -1,6 +1,7 @@
 from django.urls import path ,re_path
 from rest_framework.routers import SimpleRouter
 from backend.swagger_shema import schema_view
+
 from authorization.views import UserViewSet, ObtainTokenByPsw, ObtainTokenByGoogleCode, ObtainTokenByVkCode, \
     ObtainTokenByPhone, CreateAuthLinks, creating_google_oauth_test, creating_vk_oauth_test
 from backend_api.views import CategoryViewSet, ProductViewSet

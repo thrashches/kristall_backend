@@ -9,11 +9,18 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'price', 'visible', 'is_new')
     list_filter = ('visible', 'is_new', 'category')
     search_fields = ('title', 'description')
+    inlines = [
+        ProductImageInline,
+    ]
 
 
 @admin.register(ProductImage)

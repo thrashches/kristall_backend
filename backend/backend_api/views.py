@@ -1,13 +1,9 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from goods.models import Category, Product
 from goods.serializers import CategorySerializer, ProductSerializer, ProductImageSerializer
-
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -35,6 +31,3 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         images = product.images.all()
         serializer = ProductImageSerializer(images, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
-
-
-
