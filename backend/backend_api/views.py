@@ -18,9 +18,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        category_slug = self.request.query_params.get('category')
-        if category_slug:
+        if category_slug := self.request.query_params.get('category'):
             queryset = queryset.filter(category__slug=category_slug)
+
+        if search := self.request.query_params.get('search'):
+            queryset = queryset.filter(title__icontains=search)
         return queryset
 
     @action(detail=True, methods=['get'])

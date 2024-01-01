@@ -18,6 +18,7 @@ class SingleImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='slug')
 
     class Meta:
         model = Product
