@@ -8,7 +8,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from authorization.models import CrystalUser
 from goods.models import Category, Product, ProductImage
-from orders.models import Order, WORK
+from orders.models import Order, PROCESSING
 
 
 
@@ -98,7 +98,7 @@ class ProductTestCase(TestCase):
         self.assertEqual(expected_data, got_data)
         #ордер в статус в работе
         order = Order.objects.last()
-        order.status = WORK
+        order.status = PROCESSING
         order.save()
         # получить список заказов
         print('[ORDER LIST]')

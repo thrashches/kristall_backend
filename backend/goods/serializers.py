@@ -23,6 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+        ref_name = "ProductSerializer"
 
     def get_image(self, obj: Product):
         if obj.images.exists():

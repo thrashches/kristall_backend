@@ -5,13 +5,13 @@ from backend.swagger_shema import schema_view
 from authorization.views import UserViewSet, ObtainTokenByPsw, ObtainTokenByGoogleCode, ObtainTokenByVkCode, \
     ObtainTokenByPhone, CreateAuthLinks, creating_google_oauth_test, creating_vk_oauth_test
 from backend_api.views import CategoryViewSet, ProductViewSet
-from orders.views import  AwesomeMarvelousFantasticViewSet
+from orders.views import  OrderViewSet
 
 router = SimpleRouter()
 router.register('menu', CategoryViewSet, basename='menu')
 router.register('goods', ProductViewSet, basename='products')
 router.register('users', UserViewSet, basename='user')
-router.register('orders', AwesomeMarvelousFantasticViewSet, basename='orders')
+router.register('orders', OrderViewSet, basename='orders')
 
 urlpatterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),

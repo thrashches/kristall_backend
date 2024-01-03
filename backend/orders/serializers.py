@@ -1,8 +1,9 @@
-from django.db.models import Prefetch
+from django.db.models import F
 from rest_framework import serializers
 
-from goods.models import Product, ProductImage
-from orders.models import Order, OrderItem, WORK
+from goods.models import Product
+from goods.serializers import SingleImageSerializer
+from orders.models import Order, OrderItem
 
 
 class OrderShemaProductSerializer(serializers.Serializer):
@@ -25,99 +26,99 @@ class OrderShemaSerializer(serializers.Serializer):
     status = serializers.CharField()
 
 
-class OrderItemSerializer(serializers.Serializer):
-    product = serializers.IntegerField(write_only=True)
-    quantity = serializers.IntegerField(write_only=True)
+class ProductSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'title',
+            'price',
+            'image',
+        ]
+        ref_name = "OrderProductSerializer"
+
+    def get_image(self, obj: Product):
+        if obj.images.exists():
+            image = obj.images.first()
+            serializer = SingleImageSerializer(instance=image, context=self.context)
+            return serializer.data.get("image_file")
+        return None
 
 
-class OrderSerializer(serializers.Serializer):
-    items = OrderItemSerializer(many=True)
+class OrderItemWriteOnlySerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
 
-    def _items_dict(self, validated_data):
-        items = validated_data['items']
-        return {item['product']: item['quantity'] for item in items}
+    class Meta:
+        model = OrderItem
+        fields = [
+            'product',
+            'quantity',
+        ]
 
-    def to_representation(self, instance: Order):
 
-        representation = super().to_representation(instance)
+class OrderItemReadOnlySerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
 
-        items = (OrderItem.objects.filter(order=instance).prefetch_related(
-            Prefetch(
-                'product__images',
-                queryset=ProductImage.objects.filter(visible=True),
-                to_attr='visible_images'
-            )
-        ).select_related('product'))
-        items_data = []
-        summary = 0
-        for item in items:
-            product = item.product
-            image_url = product.visible_images[0].image_file.url if product.visible_images else None
-            item_data = {
-                'product': {
-                    'id': product.id,
-                    'name': product.title,
-                    'price': product.price,
-                    'image': image_url
-                },
-                'quantity': item.quantity
-            }
-            summary = item.quantity * product.price
-            items_data.append(item_data)
+    class Meta:
+        model = OrderItem
+        fields = [
+            'product',
+            'quantity',
+        ]
 
-        representation['items'] = items_data
-        representation['id'] = instance.pk
-        representation['number'] = instance.number
-        representation['price'] = summary
-        representation['status'] = instance.status
 
-        if self.context.get('view').action == 'list':
-            representation.pop('status')
-        return representation
+class OrderReadOnlySerializer(serializers.ModelSerializer):
+    items = OrderItemReadOnlySerializer(many=True, read_only=True)
+    price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            'items',
+            'id',
+            'number',
+            'created_at',
+            'price',
+            'status',
+        ]
+
+    def get_price(self, order):
+        items = order.items.all().annotate(
+            price=F('product__price') * F('quantity')
+        )
+        return sum(item.price for item in items)
+
+
+class OrderWriteOnlySerializer(serializers.ModelSerializer):
+    items = OrderItemWriteOnlySerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'items',
+        ]
 
     def create(self, validated_data):
-
-        queryset = []
-        items_dict = self._items_dict(validated_data)
-        user = self.context.get('view').request.user
-        order = Order.objects.create(user=user)
-        pk_ = items_dict.keys()
-        product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
-
-        for product in product_with_images:
-            quantity = items_dict[product.id]
-            queryset.append(OrderItem(order=order,
-                                      product=product,
-                                      quantity=quantity))
-        OrderItem.objects.bulk_create(queryset)
+        items = validated_data.pop('items')
+        order = super().create(validated_data)
+        OrderItem.objects.bulk_create([OrderItem(order=order, **item) for item in items])
         return order
 
     def update(self, instance, validated_data):
-        # FIXME : ДОБАВИТЬ ЛОГИКУ ПРОВЕРКИ корзины. ТО ЕСТЬ если добавляется товар который уже есть в корзине, должно quantity увеличиваться
-        queryset = []
-        order = instance
-        items_dict = self._items_dict(validated_data)
-        pk_ = items_dict.keys()
-        product_with_images = Product.objects.prefetch_related('images').filter(pk__in=pk_)
+        items = validated_data.pop('items')
+        order = super().update(instance, validated_data)
+        OrderItem.objects.filter(order=order).delete()
+        OrderItem.objects.bulk_create([OrderItem(order=order, **item) for item in items])
+        return order
 
-        if self.context['view'].request.method == 'PUT':
-
-            for product in product_with_images:
-                quantity = items_dict[product.id]
-                queryset.append(OrderItem(order=order,
-                                          product=product,
-                                          quantity=quantity))
-            OrderItem.objects.bulk_create(queryset)
-            return order
-
-        elif self.context['view'].request.method == 'PATCH':
-
-            items = OrderItem.objects.filter(order=order, product__id__in=pk_)
-            items.delete()
-            return order
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return OrderReadOnlySerializer(instance, context=context).data
 
 
-        elif self.context['view'].request.method == 'GET':
-            order.status = WORK
-            order.save()
-            return order
+
+    # def update(self, instance, validated_data):
+    #     # FIXME : ДОБАВИТЬ ЛОГИКУ ПРОВЕРКИ корзины. ТО ЕСТЬ если добавляется товар который уже есть в корзине, должно quantity увеличиваться

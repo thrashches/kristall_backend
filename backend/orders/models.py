@@ -3,16 +3,16 @@ from django.db import models
 from authorization.models import CrystalUser
 from goods.models import Product
 
-CART = 'in_basket'
-WORK = 'in_work'
+IN_CART = 'in_cart'
+PROCESSING = 'processing'
 DONE = 'done'
 DECLINE = 'decline'
 
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
-        (CART, 'В корзине'),
-        (WORK, 'В обработке'),
+        (IN_CART, 'В корзине'),
+        (PROCESSING, 'В обработке'),
         (DONE, 'Исполнен'),
         (DECLINE, 'Отменен'),
     ]
@@ -21,7 +21,7 @@ class Order(models.Model):
     user = models.ForeignKey(CrystalUser, related_name='items', on_delete=models.CASCADE, verbose_name="Пользователь")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Время изменения")
-    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default=CART, verbose_name="Статус заказа")
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default=IN_CART, verbose_name="Статус заказа")
 
     class Meta:
         verbose_name = "Заказ"
@@ -29,7 +29,7 @@ class Order(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Order {self.id} user {self.user}"
+        return f"Заказ {self.id}"
 
 
 class OrderItem(models.Model):
@@ -42,4 +42,4 @@ class OrderItem(models.Model):
         verbose_name_plural = "Позиции в заказах"
 
     def __str__(self):
-        return f"OrderItem {self.id} for Order {self.order.number}"
+        return f"Позиция {self.id} в заказе №{self.order.number}"
