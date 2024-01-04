@@ -106,7 +106,7 @@ class OrderWriteOnlySerializer(serializers.ModelSerializer):
         OrderItem.objects.bulk_create([OrderItem(order=order, **item) for item in items])
         return order
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data, partial=False):
         items = validated_data.pop('items')
         order = super().update(instance, validated_data)
         OrderItem.objects.filter(order=order).delete()
@@ -119,6 +119,14 @@ class OrderWriteOnlySerializer(serializers.ModelSerializer):
         return OrderReadOnlySerializer(instance, context=context).data
 
 
+class CartItemWriteOnlySerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            'product',
+        ]
 
     # def update(self, instance, validated_data):
     #     # FIXME : ДОБАВИТЬ ЛОГИКУ ПРОВЕРКИ корзины. ТО ЕСТЬ если добавляется товар который уже есть в корзине, должно quantity увеличиваться
