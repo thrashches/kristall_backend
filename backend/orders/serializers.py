@@ -6,26 +6,6 @@ from goods.serializers import SingleImageSerializer
 from orders.models import Order, OrderItem
 
 
-class OrderShemaProductSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    price = serializers.DecimalField(decimal_places=2, max_digits=10)
-    image = serializers.CharField()
-
-
-class OrderShemaItemSerializer(serializers.Serializer):
-    product = OrderShemaProductSerializer()
-    quantity = serializers.IntegerField(write_only=True)
-
-
-class OrderShemaSerializer(serializers.Serializer):
-    items = OrderShemaItemSerializer(many=True)
-    id = serializers.IntegerField()
-    number = serializers.CharField()
-    price = serializers.IntegerField()
-    status = serializers.CharField()
-
-
 class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -127,6 +107,3 @@ class CartItemWriteOnlySerializer(serializers.ModelSerializer):
         fields = [
             'product',
         ]
-
-    # def update(self, instance, validated_data):
-    #     # FIXME : ДОБАВИТЬ ЛОГИКУ ПРОВЕРКИ корзины. ТО ЕСТЬ если добавляется товар который уже есть в корзине, должно quantity увеличиваться
