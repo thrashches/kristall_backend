@@ -16,7 +16,7 @@ class OrderViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    # serializer_class = OrderReadOnlySerializer
+    serializer_class = OrderReadOnlySerializer
     permission_classes = [IsAuthenticated, IsOrderOwner]
     queryset = Order.objects.all()
 
