@@ -1,17 +1,19 @@
-from django.urls import path ,re_path
+from django.urls import path, re_path
 from rest_framework.routers import SimpleRouter
-from backend.swagger_shema import schema_view
 
 from authorization.views import UserViewSet, ObtainTokenByPsw, ObtainTokenByGoogleCode, ObtainTokenByVkCode, \
     ObtainTokenByPhone, CreateAuthLinks, creating_google_oauth_test, creating_vk_oauth_test
+from backend.swagger_shema import schema_view
 from backend_api.views import CategoryViewSet, ProductViewSet
-from orders.views import  OrderViewSet
+from orders.views import OrderViewSet
+from retail.views import RetailOfficeViewSet
 
 router = SimpleRouter()
 router.register('menu', CategoryViewSet, basename='menu')
 router.register('goods', ProductViewSet, basename='products')
 router.register('users', UserViewSet, basename='user')
 router.register('orders', OrderViewSet, basename='orders')
+router.register('retail', RetailOfficeViewSet, basename='retail')
 
 urlpatterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),
