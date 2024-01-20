@@ -42,7 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    # Определяем поля для записи данных
+
     email = serializers.CharField(required=False, allow_blank=True)
     telephone = serializers.CharField(required=False, allow_blank=True)
     is_wholesale = serializers.BooleanField()
@@ -58,12 +58,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'auth_type',
             'identifier',
             'id',
+            'password',
         ]
         read_only_fields = [
             'id',
             'auth_type',
             'identifier',
-            'auth_type'
         ]
 
     def validate(self, data):
@@ -78,6 +78,19 @@ class RegistrationSerializer(serializers.ModelSerializer):
         elif telephone:
             data['auth_type'] = PHONE
         return data
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
+    def create(self, validated_data):
+        """90% это костыль и можно как то сделать без этого"""
+        user = CrystalUser(**validated_data)
+        password = validated_data.pop('password', None)
+        if password is not None:
+            user.set_password(password)
+        user.save()
+        return user
 
 
 class PasswordSerializer(serializers.Serializer):

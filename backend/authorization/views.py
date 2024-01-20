@@ -377,7 +377,7 @@ class UserViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=['post'],permission_classes=[AllowAny])
     def registration(self, request):
-        """Зарегистрировать пользователя по паролю и  Union[Телефон, Почта]"""
+        """Зарегистрировать пользователя по паролю и Union[Телефон, Почта]"""
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
