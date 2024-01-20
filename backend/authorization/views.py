@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -380,7 +381,11 @@ class UserViewSet(viewsets.ViewSet):
         """Зарегистрировать пользователя по паролю и Union[Телефон, Почта]"""
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            try:
+                serializer.save()
+            except IntegrityError:
+                return Response(data='Пользователь с таким телефоном или почтой уже есть',
+                                status=status.HTTP_400_BAD_REQUEST)
             return Response(status=201)
         else:
             return Response(data=serializer.errors,status=400)
