@@ -6,14 +6,14 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend_api.serializers import ErrorSerializer, SuccessSerializer
 from .models import CrystalUser, MAIL
 from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer, \
-    UserSerializer, PasswordSerializer
+    UserSerializer, PasswordSerializer, RegistrationSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
 
@@ -302,6 +302,18 @@ class UserViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
+    def get_queryset(self):
+        """
+        Я хз как впендюрить сюда экшн который проходил бы без авторизации
+        """
+        if self.request.user.is_authenticated:
+
+            return CrystalUser.objects.filter(user=self.request.user)
+        else:
+
+            return CrystalUser.objects.none()
+
+
     @swagger_auto_schema(
         operation_description="Получение и изменение информации о залогиненном пользователе",
         methods=["PUT", "PATCH"],
@@ -354,3 +366,22 @@ class UserViewSet(viewsets.ViewSet):
             return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
+    @swagger_auto_schema(
+        request_body=RegistrationSerializer,  # Указываем сериализатор для запроса
+        responses={
+            201: "Successfully created",
+            400: "Error"
+        },
+        operation_summary="User Registration",  # Заголовок операции
+        operation_description="Create a new user by providing registration data."  # Описание операции
+    )
+    @action(detail=False, methods=['post'],permission_classes=[AllowAny])
+    def registration(self, request):
+        """Зарегистрировать пользователя по паролю и [Телефону или Почте]"""
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=201)
+        else:
+            return Response(data=serializer.errors,status=400)
+

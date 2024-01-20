@@ -1,7 +1,7 @@
 import uuid
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
 
 PHONE = 'phone'
 MAIL = 'mail'
@@ -18,7 +18,6 @@ class CrystalUser(AbstractUser):
         (VK, 'VK'),
         (PASSWORD, 'По паролю'),
     ]
-
     auth_type = models.CharField(
         max_length=10,
         choices=AUTH_TYPE_CHOICES,
@@ -33,13 +32,18 @@ class CrystalUser(AbstractUser):
         blank=False,
         verbose_name='Идентификатор',
     )
-
     code = models.CharField(
         max_length=20,
         null=True,
         blank=True,
         verbose_name='Код',
     )
+    is_wholesale = models.BooleanField(null=False,
+                                       verbose_name='Оптовик')
+    telephone = models.CharField(max_length=20,
+                                 null=True,
+                                 blank=True,
+                                 verbose_name='Телефон')
 
     def save(self, *args, **kwargs):
         user_uuid = self.generate_uuid()
@@ -60,8 +64,19 @@ class CrystalUser(AbstractUser):
             models.UniqueConstraint(
                 fields=['auth_type', 'identifier'],
                 name='unique_auth_type_identifier',
+            ),
+            models.UniqueConstraint(
+                fields=['auth_type', 'telephone'],
+                condition=Q(auth_type=PHONE),
+                name='unique_telephone_for_phone_auth_type',
+            ),
+            models.UniqueConstraint(
+                fields=['auth_type', 'email'],
+                condition=Q(auth_type=MAIL),
+                name='unique_email_for_mail_auth_type',
             )
         ]
+
 
     def __str__(self):
         return self.username
