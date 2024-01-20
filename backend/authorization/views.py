@@ -367,17 +367,17 @@ class UserViewSet(viewsets.ViewSet):
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
     @swagger_auto_schema(
-        request_body=RegistrationSerializer,  # Указываем сериализатор для запроса
+        request_body=RegistrationSerializer,
         responses={
-            201: "Successfully created",
-            400: "Error"
+            201: "Пользователь создан",
+            400: "Ошибка"
         },
-        operation_summary="User Registration",  # Заголовок операции
-        operation_description="Create a new user by providing registration data."  # Описание операции
+        operation_summary="Регистрация пользователя по паролю ( телефон или почта)",
+        operation_description="Создает пользователя. Поля email или telephone используются соответственно"
     )
     @action(detail=False, methods=['post'],permission_classes=[AllowAny])
     def registration(self, request):
-        """Зарегистрировать пользователя по паролю и [Телефону или Почте]"""
+        """Зарегистрировать пользователя по паролю и  Union[Телефон, Почта]"""
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
