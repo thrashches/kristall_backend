@@ -1,8 +1,7 @@
 import uuid
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.utils.translation import gettext_lazy as _
 PHONE = 'phone'
 MAIL = 'mail'
 GOOGLE = 'google'
@@ -18,7 +17,6 @@ class CrystalUser(AbstractUser):
         (VK, 'VK'),
         (PASSWORD, 'По паролю'),
     ]
-
     auth_type = models.CharField(
         max_length=10,
         choices=AUTH_TYPE_CHOICES,
@@ -33,13 +31,21 @@ class CrystalUser(AbstractUser):
         blank=False,
         verbose_name='Идентификатор',
     )
-
     code = models.CharField(
         max_length=20,
         null=True,
         blank=True,
         verbose_name='Код',
     )
+    is_wholesale = models.BooleanField(null=False,
+                                       verbose_name='Оптовик')
+    email = models.EmailField(_("email address"),
+                              blank=True,
+                              unique=True)
+    phone = models.CharField(max_length=20,
+                             null=True,
+                             blank=True,
+                             verbose_name='Телефон')
 
     def save(self, *args, **kwargs):
         user_uuid = self.generate_uuid()
@@ -60,7 +66,7 @@ class CrystalUser(AbstractUser):
             models.UniqueConstraint(
                 fields=['auth_type', 'identifier'],
                 name='unique_auth_type_identifier',
-            )
+            ),
         ]
 
     def __str__(self):

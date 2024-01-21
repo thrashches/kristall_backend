@@ -1,19 +1,20 @@
 import requests
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend_api.serializers import ErrorSerializer, SuccessSerializer
 from .models import CrystalUser, MAIL
 from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer, \
-    UserSerializer, PasswordSerializer
+    UserSerializer, PasswordSerializer, RegistrationSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
 
@@ -302,6 +303,7 @@ class UserViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
+
     @swagger_auto_schema(
         operation_description="Получение и изменение информации о залогиненном пользователе",
         methods=["PUT", "PATCH"],
@@ -354,3 +356,26 @@ class UserViewSet(viewsets.ViewSet):
             return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        request_body=RegistrationSerializer,
+        responses={
+            201: openapi.Response('Пользователь создан', RegistrationSerializer),
+            400: openapi.Response('Пользователь не создан')
+        },
+        operation_summary="Регистрация пользователя по паролю ( телефон или почта)",
+        operation_description="Создает пользователя. Поля email или phone используются соответственно"
+    )
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def registration(self, request):
+        """Зарегистрировать пользователя по паролю и Union[Телефон, Почта]"""
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as er:
+                return Response(data={'error': f'Пользователь уже существует {str(er)}'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
