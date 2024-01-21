@@ -31,12 +31,16 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_image(self, obj: Product):
         if obj.images.exists():
             image = obj.images.first()
-            serializer = SingleImageSerializer(instance=image, context=self.context)
-            return serializer.data.get("image_file")
+            return image.image_file.url
         return None
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image_file = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
         fields = '__all__'
+
+    def get_image_file(self, obj: ProductImage):
+        return obj.image_file.url

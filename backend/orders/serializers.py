@@ -22,8 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_image(self, obj: Product):
         if obj.images.exists():
             image = obj.images.first()
-            serializer = SingleImageSerializer(instance=image, context=self.context)
-            return serializer.data.get("image_file")
+            return image.image_file.url
         return None
 
 
