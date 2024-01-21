@@ -303,17 +303,6 @@ class UserViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-    def get_queryset(self):
-        """
-        Я хз как впендюрить сюда экшн который проходил бы без авторизации
-        """
-        if self.request.user.is_authenticated:
-
-            return CrystalUser.objects.filter(user=self.request.user)
-        else:
-
-            return CrystalUser.objects.none()
-
 
     @swagger_auto_schema(
         operation_description="Получение и изменение информации о залогиненном пользователе",
@@ -367,26 +356,26 @@ class UserViewSet(viewsets.ViewSet):
             return Response({'message': 'Пароль успешно изменён.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
+
     @swagger_auto_schema(
         request_body=RegistrationSerializer,
         responses={
-            201: "Пользователь создан",
-            400: "Ошибка"
+            201: openapi.Response('Пользователь создан', RegistrationSerializer),
+            400: openapi.Response('Пользователь не создан')
         },
         operation_summary="Регистрация пользователя по паролю ( телефон или почта)",
-        operation_description="Создает пользователя. Поля email или telephone используются соответственно"
+        operation_description="Создает пользователя. Поля email или phone используются соответственно"
     )
-    @action(detail=False, methods=['post'],permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def registration(self, request):
         """Зарегистрировать пользователя по паролю и Union[Телефон, Почта]"""
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 serializer.save()
-            except IntegrityError:
-                return Response(data='Пользователь с таким телефоном или почтой уже есть',
+            except IntegrityError as er:
+                return Response(data={'error': f'Пользователь уже существует {str(er)}'},
                                 status=status.HTTP_400_BAD_REQUEST)
-            return Response(status=201)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(data=serializer.errors,status=400)
-
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

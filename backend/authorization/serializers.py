@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
             'auth_type',
             'identifier',
             'id',
-            'telephone'
+            'phone'
         ]
         read_only_fields = [
             'id',
@@ -42,41 +42,28 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-
     email = serializers.CharField(required=False, allow_blank=True)
-    telephone = serializers.CharField(required=False, allow_blank=True)
-    is_wholesale = serializers.BooleanField()
-
+    phone = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = CrystalUser
         fields = [
             'first_name',
             'last_name',
             'email',
-            'telephone',
+            'phone',
             'is_wholesale',
-            'auth_type',
-            'identifier',
-            'id',
             'password',
+            'auth_type'
         ]
-        read_only_fields = [
-            'id',
-            'auth_type',
-            'identifier',
-        ]
-
     def validate(self, data):
         email = data.get('email', None)
-        telephone = data.get('telephone', None)
-        if not email and not telephone:
-            raise serializers.ValidationError("Поле 'email' или 'telephone' должно быть заполнено.")
-        if email and telephone:
-            raise serializers.ValidationError("Только одно из полей 'email' или 'telephone' может быть заполнено.")
-        if email:
-            data['auth_type'] = MAIL
-        elif telephone:
-            data['auth_type'] = PHONE
+        phone = data.get('phone', None)
+        auth_type = data.get('auth_type')
+        if auth_type == PHONE and not phone:
+            raise serializers.ValidationError("Поле телефон должно быть заполнено.")
+        elif auth_type == MAIL and not email:
+            raise serializers.ValidationError("Поле почта должно быть заполнено.")
         return data
 
     def validate_password(self, value):
