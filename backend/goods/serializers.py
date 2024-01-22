@@ -18,7 +18,6 @@ class SingleImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
-    price = serializers.DecimalField(decimal_places=0, max_digits=10)
     energy = serializers.DecimalField(decimal_places=0, max_digits=10)
     weight = serializers.DecimalField(decimal_places=0, max_digits=10)
     category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='slug')
