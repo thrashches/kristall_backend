@@ -2,6 +2,7 @@ from django.db import models
 
 from authorization.models import CrystalUser
 from goods.models import Product
+from retail.models import RetailOffice
 
 IN_CART = 'in_cart'
 PROCESSING = 'processing'
@@ -21,7 +22,13 @@ class Order(models.Model):
     user = models.ForeignKey(CrystalUser, related_name='items', on_delete=models.CASCADE, verbose_name="Пользователь")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Время изменения")
-    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default=IN_CART, verbose_name="Статус заказа")
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default=IN_CART,
+                              verbose_name="Статус заказа")
+
+    delivery_time = models.DateTimeField(verbose_name="Время доставки")
+    comment = models.CharField(blank=True,max_length=4000,verbose_name="Комментарий")
+    retail_office = models.ForeignKey(RetailOffice, on_delete=models.PROTECT,related_name='office', null=True, blank=True)
+    address = models.CharField(null=True, blank=True,max_length=200, verbose_name="Адрес")
 
     class Meta:
         verbose_name = "Заказ"

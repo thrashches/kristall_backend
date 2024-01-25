@@ -39,6 +39,7 @@ class CrystalUser(AbstractUser):
     )
     is_wholesale = models.BooleanField(null=False,
                                        verbose_name='Оптовик')
+
     email = models.EmailField(_("email address"),
                               blank=True,
                               unique=True)

@@ -1,8 +1,6 @@
 from django.db.models import F
 from rest_framework import serializers
-
 from goods.models import Product
-from goods.serializers import SingleImageSerializer
 from orders.models import Order, OrderItem
 
 
@@ -48,7 +46,7 @@ class OrderItemReadOnlySerializer(serializers.ModelSerializer):
         ]
 
 
-class OrderReadOnlySerializer(serializers.ModelSerializer):
+class OrderReadOnlyWholesalerSerializer(serializers.ModelSerializer):
     items = OrderItemReadOnlySerializer(many=True, read_only=True)
     price = serializers.SerializerMethodField()
 
@@ -61,6 +59,8 @@ class OrderReadOnlySerializer(serializers.ModelSerializer):
             'created_at',
             'price',
             'status',
+            'delivery_time',
+            'comment',
         ]
 
     def get_price(self, order):
@@ -70,13 +70,18 @@ class OrderReadOnlySerializer(serializers.ModelSerializer):
         return sum(item.price for item in items)
 
 
+class OrderReadOnlySingleSerializer(OrderReadOnlyWholesalerSerializer):
+    class Meta(OrderReadOnlyWholesalerSerializer.Meta):
+        fields = OrderReadOnlyWholesalerSerializer.Meta.fields + ['retail_office', 'address']
+
+
 class OrderWriteOnlySerializer(serializers.ModelSerializer):
     items = OrderItemWriteOnlySerializer(many=True, write_only=True)
 
     class Meta:
         model = Order
         fields = [
-            'items',
+            'items'
         ]
 
     def create(self, validated_data):
@@ -93,14 +98,27 @@ class OrderWriteOnlySerializer(serializers.ModelSerializer):
         return order
 
     def to_representation(self, instance):
+        print('TO REPRESENTATION')
+
         request = self.context.get('request')
         context = {'request': request}
-        return OrderReadOnlySerializer(instance, context=context).data
+
+        if request.user.is_wholesale:
+            return OrderReadOnlyWholesalerSerializer(instance, context=context).data
+        else:
+            return OrderReadOnlySingleSerializer(instance, context=context).data
+
+
+class OrderWriteOnlyCreateSerializer(OrderWriteOnlySerializer):
+    class Meta(OrderWriteOnlySerializer.Meta):
+        fields = OrderWriteOnlySerializer.Meta.fields + ['delivery_time',
+                                                         'comment',
+                                                         'retail_office',
+                                                         'address', ]
 
 
 class CartItemWriteOnlySerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
-
     class Meta:
         model = OrderItem
         fields = [
