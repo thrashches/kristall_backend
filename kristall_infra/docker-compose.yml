@@ -8,8 +8,8 @@ services:
       - ./.env
 
   backend:
-#    image: thrashches/kristall_backend:1.0.0
-    build: ../backend
+    image: thrashches/kristall_backend:1.0.0
+#    build: ../backend
     restart: always
     ports:
       - "8000:8000"
