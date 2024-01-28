@@ -81,4 +81,14 @@ class CrystalUser(AbstractUser):
         ]
 
     def __str__(self):
+        if self.auth_type == MAIL:
+            return self.email
+        elif self.auth_type == PHONE:
+            return self.phone
+        elif self.auth_type == PASSWORD:
+            return self.username
+        elif self.auth_type == GOOGLE:
+            return self.email
+        elif self.auth_type == VK:
+            return self.email
         return self.username
