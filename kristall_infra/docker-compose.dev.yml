@@ -1,0 +1,43 @@
+version: '3.3'
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - ../.pg_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  backend:
+#    image: thrashches/kristall_backend:1.0.0
+    build: ../backend
+    restart: always
+    entrypoint: [python, manage.py, runserver, 0.0.0.0:8000]
+    environment:
+      - "DEBUG:1"
+
+#      - ""
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+      - ../.static:/app/static/
+      - ../.media:/app/media/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  frontend:
+    image: thrashches/kristall_frontend:1.0.0
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../.static:/var/html/static/
+      - ../.media:/var/html/media/
+    depends_on:
+      - backend
