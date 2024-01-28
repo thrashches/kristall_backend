@@ -11,4 +11,4 @@ class RetailOfficeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_image(self, obj: RetailOffice):
-        return obj.image.image_file.url
+        return obj.image.url
