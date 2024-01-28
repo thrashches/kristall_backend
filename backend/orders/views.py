@@ -19,6 +19,7 @@ class OrderViewSet(
 
     permission_classes = [IsOrderOwner]
     queryset = Order.objects.all()
+    pagination_class = None
 
     def check_for_wholesaler(self):
         """Это костыль? """

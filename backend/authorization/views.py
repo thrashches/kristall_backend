@@ -303,7 +303,6 @@ class UserViewSet(viewsets.ViewSet):
     def get_object(self):
         return self.request.user
 
-
     @swagger_auto_schema(
         operation_description="Получение и изменение информации о залогиненном пользователе",
         methods=["PUT", "PATCH"],
@@ -374,8 +373,15 @@ class UserViewSet(viewsets.ViewSet):
             try:
                 serializer.save()
             except IntegrityError as er:
-                return Response(data={'error': f'Пользователь уже существует {str(er)}'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                if "UNIQUE" in str(er):
+                    error_field = str(er).split(": ")[1].split(".")[1]
+                    return Response(data={'errors': {error_field: ['Пользователь с такими данными уже существует']}},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response(
+                        data={'errors': {'non_field_errors': ["При создании пользователя произошла ошибка."]}},
+                        status=status.HTTP_400_BAD_REQUEST)
+
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

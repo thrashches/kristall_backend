@@ -38,15 +38,25 @@ class CrystalUser(AbstractUser):
         verbose_name='Код',
     )
     is_wholesale = models.BooleanField(null=False,
+                                       default=False,
                                        verbose_name='Оптовик')
-
-    email = models.EmailField(_("email address"),
-                              blank=True,
-                              unique=True)
+    email = models.EmailField(_("email address"), blank=True, null=True, unique=True, default=None)
     phone = models.CharField(max_length=20,
                              null=True,
                              blank=True,
                              verbose_name='Телефон')
+    birthday = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Дата рождения',
+    )
+    company = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name='Компания',
+    )
+    bonus_balance = models.IntegerField(default=0, verbose_name="Бонусные баллы")
 
     def save(self, *args, **kwargs):
         user_uuid = self.generate_uuid()
