@@ -32,12 +32,17 @@ class UserSerializer(serializers.ModelSerializer):
             'auth_type',
             'identifier',
             'id',
-            'phone'
+            'phone',
+            'is_wholesale',
+            'birthday',
+            'company',
+            'bonus_balance',
         ]
         read_only_fields = [
             'id',
             'auth_type',
             'identifier',
+            'bonus_balance',
         ]
 
 
@@ -45,6 +50,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.CharField(required=False, allow_blank=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
+
     class Meta:
         model = CrystalUser
         fields = [
@@ -54,8 +61,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'phone',
             'is_wholesale',
             'password',
+            'password_confirm',
             'auth_type'
         ]
+
     def validate(self, data):
         email = data.get('email', None)
         phone = data.get('phone', None)
@@ -70,10 +79,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
         validate_password(value)
         return value
 
+    def validate_password_confirm(self, value):
+        password = self.initial_data.get('password')
+        if password != value:
+            raise serializers.ValidationError("Пароли не совпадают.")
+        return value
+
     def create(self, validated_data):
         """90% это костыль и можно как то сделать без этого"""
+        validated_data.pop('password_confirm', None)
         user = CrystalUser(**validated_data)
         password = validated_data.pop('password', None)
+
         if password is not None:
             user.set_password(password)
         user.save()

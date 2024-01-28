@@ -19,6 +19,7 @@ class OrderViewSet(
     serializer_class = OrderReadOnlySerializer
     permission_classes = [IsOrderOwner]
     queryset = Order.objects.all()
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action in ['retrieve', 'list']:
