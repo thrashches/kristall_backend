@@ -78,11 +78,17 @@ class CrystalUser(AbstractUser):
                 fields=['auth_type', 'identifier'],
                 name='unique_auth_type_identifier',
             ),
-            # models.UniqueConstraint(
-            #     fields=['email', 'auth_type'],
-            #     name='unique_auth_type_email',
-            # )
         ]
 
     def __str__(self):
+        if self.auth_type == MAIL:
+            return self.email
+        elif self.auth_type == PHONE:
+            return self.phone
+        elif self.auth_type == PASSWORD:
+            return self.username
+        elif self.auth_type == GOOGLE:
+            return self.email
+        elif self.auth_type == VK:
+            return self.email
         return self.username

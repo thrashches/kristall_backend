@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='crystaluser',
             name='is_wholesale',
-            field=models.BooleanField(default=False, verbose_name='Оптовик'),
+            field=models.BooleanField(default=True, verbose_name='Оптовик'),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='crystaluser',

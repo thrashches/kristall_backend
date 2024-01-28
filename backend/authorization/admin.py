@@ -6,11 +6,11 @@ from .models import CrystalUser
 
 
 class CrystalUserAdmin(UserAdmin):
-    list_display = ('id', 'username', 'email', 'auth_type', 'identifier')
+    list_display = ('id', 'username','is_wholesale', 'email', 'auth_type', 'identifier')
     fieldsets = (
         (None, {"fields": (
             "username", "password",
-            "auth_type", "code",
+            "auth_type", "code",'is_wholesale'
         )}),
         (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),
         (
