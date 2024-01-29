@@ -4,10 +4,10 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from orders.models import Order, IN_CART, OrderItem
+from orders.models import Order, IN_CART, OrderItem, PROCESSING
 from orders.permissions import IsOrderOwner
 from orders.serializers import OrderWriteOnlySerializer, CartItemWriteOnlySerializer, \
-    OrderReadOnlyWholesalerSerializer, OrderReadOnlySingleSerializer, OrderWriteOnlyCreateSerializer
+    OrderReadOnlyWholesalerSerializer, OrderReadOnlySingleSerializer, OrderWriteOnlyCreateSerializer, CheckoutSerializer
 
 
 class OrderViewSet(
@@ -16,7 +16,6 @@ class OrderViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-
     permission_classes = [IsOrderOwner]
     queryset = Order.objects.all()
     pagination_class = None
@@ -50,6 +49,8 @@ class OrderViewSet(
     )
     def create(self, request, *args, **kwargs):
         """Создание нового заказа"""
+        if Order.objects.filter(user=request.user, status=IN_CART).exists():
+            Order.objects.filter(user=request.user, status=IN_CART).delete()
         return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(method='GET', responses={200: openapi.Response('Успешно', OrderReadOnlySingleSerializer)},
@@ -68,13 +69,13 @@ class OrderViewSet(
         """Просмотр корзины, добавление товаров в корзину и удаление товаров из корзины"""
         cart = Order.objects.filter(user=request.user, status=IN_CART).order_by('created_at').last()
         if not cart:
-            cart = Order.objects.create(user=request.user, status=IN_CART)
+            return Response({"error": "Корзина пуста!"}, status=status.HTTP_400_BAD_REQUEST)
         if request.method == "GET":
             serializer = self.get_serializer_class()
             return Response(serializer(cart).data)
         elif request.method == "PUT":
             """Добавление товаров в корзину (с перезаписью всех товаров)"""
-            serializer = OrderWriteOnlySerializer(cart, data=request.data,context={'request':self.request})
+            serializer = OrderWriteOnlySerializer(cart, data=request.data, context={'request': self.request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
@@ -95,3 +96,13 @@ class OrderViewSet(
             """Очистка всей корзины"""
             cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['POST'])
+    def checkout(self, request):
+        if not Order.objects.filter(status=IN_CART, user=request.user).exists():
+            return Response(data={"error": "Ваша корзина пуста!"}, status=status.HTTP_400_BAD_REQUEST)
+        order = Order.objects.filter(status=IN_CART, user=request.user).last()
+        serializer = CheckoutSerializer(data=request.data, instance=order)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(status=PROCESSING)
+        return Response(serializer.data, status=status.HTTP_200_OK)

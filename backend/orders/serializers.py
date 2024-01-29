@@ -1,5 +1,6 @@
 from django.db.models import F
 from rest_framework import serializers
+
 from goods.models import Product
 from orders.models import Order, OrderItem
 
@@ -119,8 +120,20 @@ class OrderWriteOnlyCreateSerializer(OrderWriteOnlySerializer):
 
 class CartItemWriteOnlySerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
+
     class Meta:
         model = OrderItem
         fields = [
             'product',
+        ]
+
+
+class CheckoutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            'delivery_time',
+            'comment',
+            'address',
+            'retail_office',
         ]
