@@ -1,6 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
+from django_filters import rest_framework as filters
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 
 from goods.models import Category, Product
 from goods.serializers import CategorySerializer, ProductSerializer, ProductImageSerializer
@@ -15,6 +19,11 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.filter(visible=True)
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    search_fields = [
+        'title', 'description'
+    ]
+    ordering_fields = '__all__'
 
     def get_queryset(self):
         queryset = super().get_queryset()
