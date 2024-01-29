@@ -1,10 +1,9 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.filters import SearchFilter
-from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet
+from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 
 from goods.models import Category, Product
 from goods.serializers import CategorySerializer, ProductSerializer, ProductImageSerializer
