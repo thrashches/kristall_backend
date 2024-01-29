@@ -50,7 +50,6 @@ jobs:
             docker compose pull
             docker compose down
             docker compose up -d
-            docker exec -it kristall_infra-backend-1 python manage.py migrate
 
   send_message:
     runs-on: ubuntu-latest
