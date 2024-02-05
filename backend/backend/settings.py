@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'goods.apps.GoodsConfig',
     'orders.apps.OrdersConfig',
     'retail.apps.RetailConfig',
+    'reviews.apps.ReviewsConfig',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
