@@ -7,6 +7,7 @@ from backend.swagger_shema import schema_view
 from backend_api.views import CategoryViewSet, ProductViewSet
 from orders.views import OrderViewSet
 from retail.views import RetailOfficeViewSet
+from reviews.views import ReviewViewSet
 
 router = SimpleRouter()
 router.register('menu', CategoryViewSet, basename='menu')
@@ -14,6 +15,7 @@ router.register('goods', ProductViewSet, basename='products')
 router.register('users', UserViewSet, basename='user')
 router.register('orders', OrderViewSet, basename='orders')
 router.register('retail', RetailOfficeViewSet, basename='retail')
+router.register('reviews', ReviewViewSet, basename='reviews')
 
 urlpatterns = [
     path('auth/email/', ObtainTokenByPsw.as_view(), name='get_token_by_psw_and_email'),
