@@ -7,7 +7,7 @@ class Review(models.Model):
     name = models.CharField(max_length=255, verbose_name='Имя')
     email = models.EmailField(unique=True)
     published = models.BooleanField(default=False, verbose_name='Отображать на сайте')
-    text = models.TextField(max_length=1000, verbose_name='Текст отзыва')
+    text = models.TextField(max_length=300, verbose_name='Текст отзыва')
     rating = models.PositiveSmallIntegerField(
         validators=[
             MinValueValidator(0),

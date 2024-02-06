@@ -5,6 +5,6 @@ from .serializers import ReviewSerializer
 
 
 class ReviewViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = Review.objects.all()
+    queryset = Review.objects.filter(published=True)
     serializer_class = ReviewSerializer
     pagination_class = None
