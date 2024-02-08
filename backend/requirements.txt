@@ -20,7 +20,7 @@ lazy-object-proxy==1.10.0
 mccabe==0.7.0
 packaging==23.2
 pep8-naming==0.13.3
-Pillow==10.1.0
+pillow==10.2.0
 psycopg2-binary==2.9.9
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
