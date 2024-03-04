@@ -12,3 +12,7 @@ class RetailOffice(models.Model):
     class Meta:
         verbose_name = "Офис продаж"
         verbose_name_plural = "Офисы продаж"
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.name}: {self.address}'

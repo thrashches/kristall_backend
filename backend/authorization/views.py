@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.http import HttpResponse
 from drf_yasg import openapi
@@ -12,11 +13,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend_api.serializers import ErrorSerializer, SuccessSerializer
-from .models import CrystalUser, MAIL
+from .models import CrystalUser, MAIL, YANDEX
 from .serializers import AuthCodeSerializer, AuthPasswordSerializer, AuthByPhoneSerializer, OAuthUrlsSerializer, \
-    UserSerializer, PasswordSerializer, RegistrationSerializer
+    UserSerializer, PasswordSerializer, RegistrationSerializer, YandexAuthSerializer
 from .utils import create_oauth_links, OauthWay, get_user_info, create_payload_for_access_google_token, \
     create_payload_for_access_vk_token, get_vk_user_info, get_phone_code_from_api
+
+
+User = get_user_model()
 
 
 def creating_vk_oauth_test(request):
@@ -385,3 +389,38 @@ class UserViewSet(viewsets.ViewSet):
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(data={"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class YandexAuthTokenAPIView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = YandexAuthSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            response = requests.get(
+                'https://login.yandex.ru/info',
+                headers={
+                    "Authorization": f"OAuth {serializer.validated_data.get('token', '')}",
+                },
+                params={
+                    'format': 'json',
+                }
+            )
+            try:
+                user_info = response.json()
+                yandex_id = user_info.get('id')
+                user, created = User.objects.get_or_create(yandex_id=yandex_id)
+                user.first_name = user_info.get('first_name')
+                user.last_name = user_info.get('last_name')
+                user.email = user_info.get('default_email')
+                user.auth_type = YANDEX
+                user.phone = user_info.get('default_phone', {}).get('number')
+                user.save()
+
+                auth_token, _ = Token.objects.get_or_create(user=user)
+                return Response({"token": auth_token.key}, status=status.HTTP_200_OK)
+            except:
+                pass
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)

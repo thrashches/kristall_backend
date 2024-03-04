@@ -25,6 +25,8 @@ services:
   frontend:
     image: thrashches/kristall_frontend:1.0.0
     restart: always
+    env_file:
+      - ./.env
 
   nginx:
     image: nginx:alpine
