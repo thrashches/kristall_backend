@@ -422,4 +422,5 @@ class YandexAuthTokenAPIView(APIView):
                 return Response({"token": auth_token.key}, status=status.HTTP_200_OK)
             except:
                 pass
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
