@@ -34,7 +34,21 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/var:/var/lib/letsencrypt
       - ../.static:/var/html/static/
       - ../.media:/var/html/media/
+      - ./certbot/www:/var/html
     depends_on:
       - backend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/var:/var/lib/letsencrypt
+      - ./certbot/www:/var/html
+    depends_on:
+      - nginx
+    command: certonly --webroot --webroot-path=/var/html --agree-tos --no-eff-email --staging -d dev-crystalcake.tw1.su
