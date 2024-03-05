@@ -51,4 +51,4 @@ services:
       - ./certbot/www:/var/html
     depends_on:
       - nginx
-    command: certonly --webroot --webroot-path=/var/html --agree-tos --no-eff-email --staging -d dev-crystalcake.tw1.su
+    command: certonly --webroot --webroot-path=/var/html --email vl-niloff@yandex.ru --agree-tos --no-eff-email --staging -d dev-crystalcake.tw1.su
