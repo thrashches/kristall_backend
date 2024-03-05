@@ -4,6 +4,8 @@
 __pycache__
 vevn
 
+kristall_infra/dhparam-2048.pem
+
 
 __pycache__/
 *.pyo
