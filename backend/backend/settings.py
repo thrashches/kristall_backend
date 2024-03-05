@@ -34,6 +34,8 @@ INSTALLED_APPS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CSRF_TRUSTED_ORIGINS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,backend,localho.st").split(',')
+
 GOOGLE_OAUTH = GOOGLE_SECRET
 
 VK_OAUTH = VK_SECRET
