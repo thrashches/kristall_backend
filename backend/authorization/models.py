@@ -68,9 +68,10 @@ class CrystalUser(AbstractUser):
     bonus_balance = models.IntegerField(default=0, verbose_name="Бонусные баллы")
 
     def save(self, *args, **kwargs):
-        user_uuid = self.generate_uuid()
         if not self.username:
+            user_uuid = self.generate_uuid()
             self.username = user_uuid
+        return super(CrystalUser, self).save(*args, **kwargs)
 
     @staticmethod
     def generate_uuid():
