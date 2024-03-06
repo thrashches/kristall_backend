@@ -421,6 +421,6 @@ class YandexAuthTokenAPIView(APIView):
                 auth_token, _ = Token.objects.get_or_create(user=user)
                 return Response({"token": auth_token.key}, status=status.HTTP_200_OK)
             except Exception as e:
-                print(e)
+                Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
